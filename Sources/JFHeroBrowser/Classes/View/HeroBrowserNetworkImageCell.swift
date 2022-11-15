@@ -40,8 +40,8 @@ open class HeroBrowserNetworkImageCell: HeroBrowserBaseImageCell {
         vm.asyncLoadRawSource { [weak self] in
             guard let self = self else { return }
             switch $0 {
-            case let .success(image):
-                self.updateView(image: image)
+            case let .success(rawData):
+                self.updateView(image: rawData.0)
                 break
             case let .progress(progress):
                 self.progressView.progress = Double(progress)

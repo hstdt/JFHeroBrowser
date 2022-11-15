@@ -26,7 +26,7 @@ public enum HeroBrowserResult<T> {
 
 public protocol NetworkImageProvider: AnyObject {
     typealias Complete<T> = (HeroBrowserResult<T>) -> ()
-    func downloadImage(with imgUrl: String, complete: Complete<UIImage>?)
+    func downloadImage(with imgUrl: String, complete: Complete<(UIImage, Data?)>?)
 }
 
 public protocol HeroBrowserViewModuleBaseProtocol {
@@ -44,12 +44,12 @@ public protocol HeroBrowserViewModuleProtocol: HeroBrowserViewModuleBaseProtocol
 
 open class HeroBrowserViewModule: HeroBrowserViewModuleProtocol {
     public typealias ThumbailData = UIImage
-    public typealias RawData = UIImage
+    public typealias RawData = (UIImage, Data?)
     open var type: HeroBrowserType
     open func asyncLoadThumbailSource(with complete: Complete<UIImage>?) {
         complete?(.failed(nil))
     }
-    open func asyncLoadRawSource(with complete: Complete<UIImage>?) {
+    open func asyncLoadRawSource(with complete: Complete<RawData>?) {
         complete?(.failed(nil))
     }
     public init(type: HeroBrowserType) {

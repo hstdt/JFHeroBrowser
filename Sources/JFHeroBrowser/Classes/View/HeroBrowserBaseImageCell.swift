@@ -58,16 +58,14 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
             switch result {
             case let .success(image):
                 self.updateView(image: image)
-                break
             case _ :
                 break
             }
         }
         vm.asyncLoadRawSource { result in
             switch result {
-            case let .success(image):
-                self.updateView(image: image)
-                break
+            case let .success(rawData):
+                self.updateView(image: rawData.0)
             case _ :
                 break
             }

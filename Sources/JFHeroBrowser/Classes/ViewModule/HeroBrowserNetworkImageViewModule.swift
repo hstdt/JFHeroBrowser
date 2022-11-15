@@ -21,8 +21,8 @@ public class HeroBrowserNetworkImageViewModule: HeroBrowserViewModule {
         self.imageProvider?.downloadImage(with: thumbailImgUrl, complete: { result in
             DispatchQueue.main.async {
                 switch result {
-                case let .success(image):
-                    complete?(.success(image))
+                case let .success(rawdata):
+                    complete?(.success(rawdata.0))
                     break
                 case let .failed(error):
                     complete?(.failed(error))
@@ -35,19 +35,16 @@ public class HeroBrowserNetworkImageViewModule: HeroBrowserViewModule {
         })
     }
     
-    public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<UIImage>?) {
+    public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<RawData>?) {
         self.imageProvider?.downloadImage(with: self.originImgUrl, complete: { result in
             DispatchQueue.main.async {
                 switch result {
-                case let .success(image):
-                    complete?(.success(image))
-                    break
+                case let .success(rawData):
+                    complete?(.success(rawData))
                 case let .failed(error):
                     complete?(.failed(error))
-                    break
                 case let .progress(progress):
                     complete?(.progress(progress))
-                    break
                 }
             }
         })

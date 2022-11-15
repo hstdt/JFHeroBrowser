@@ -26,7 +26,7 @@ public class HeroBrowserDataImageViewModule: HeroBrowserViewModule {
         }
     }
     
-    public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<UIImage>?) {
+    public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<RawData>?) {
         DispatchQueue.global().async {
             guard let img = UIImage(data: self.imageData) else {
                 DispatchQueue.main.async {
@@ -35,7 +35,7 @@ public class HeroBrowserDataImageViewModule: HeroBrowserViewModule {
                 return
             }
             DispatchQueue.main.async {
-                complete?(.success(img))
+                complete?(.success((img, self.imageData)))
             }
         }
     }
