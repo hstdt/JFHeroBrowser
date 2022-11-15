@@ -22,15 +22,12 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
         }
         self.imageProvider?.downloadImage(with: thumbailImgUrl, complete: {
             switch $0 {
-            case let .success(image):
-                complete?(.success(image))
-                break
+            case let .success(rawData):
+                complete?(.success(rawData.0))
             case let .failed(error):
                 complete?(.failed(error))
-                break
             case let .progress(progress):
                 complete?(.progress(progress))
-                break
             }
         })
     }

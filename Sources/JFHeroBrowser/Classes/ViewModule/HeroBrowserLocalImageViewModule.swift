@@ -17,13 +17,15 @@ public class HeroBrowserLocalImageViewModule: HeroBrowserViewModule {
         complete?(.success(self.image))
     }
     
-    public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<UIImage>?) {
-        complete?(.success(self.image))
+    public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<RawData>?) {
+        complete?(.success((self.image, self.imageData)))
     }
     
     var image: UIImage
-    public init(image: UIImage) {
+    var imageData: Data?
+    public init(image: UIImage, imageData: Data? = nil) {
         self.image = image
+        self.imageData = imageData
         super.init(type: .localImage)
     }
 }

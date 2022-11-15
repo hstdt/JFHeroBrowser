@@ -92,8 +92,8 @@ class HeroBrowserVideoCell: HeroBrowserBaseImageCell {
         }
         vm.asyncLoadRawSource { result in
             switch result {
-            case let .success(playerItem):
-                self.updateVideoView(with: playerItem)
+            case let .success(rawData):
+                self.updateVideoView(with: rawData)
                 break
             case _ :
                 break
