@@ -192,7 +192,7 @@ public class HeroVideoView: HeroPlayerView {
     
     public func playVideo() {
         self.state = .playing
-        if self.player == nil {
+        if self.player == nil || self.playerItem == nil {
             self.setUpPlayer()
         }
         self.pauseBackgroundSound()

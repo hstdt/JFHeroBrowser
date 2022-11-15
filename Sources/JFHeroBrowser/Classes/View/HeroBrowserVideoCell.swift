@@ -57,7 +57,16 @@ extension HeroBrowserVideoCell: HeroVideoViewDelegate {
 }
 
 class HeroBrowserVideoCell: HeroBrowserBaseImageCell {
-    
+
+    deinit {
+        self.videoView.resetPlayer()
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.videoView.resetPlayer()
+    }
+
     lazy var videoView: HeroVideoView = {
         let view = HeroVideoView(frame: .zero)
         view.deletgate = self
