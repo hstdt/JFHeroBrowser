@@ -79,10 +79,13 @@ extension HeroBrowserDelegate {
 }
 
 open class HeroBrowser: UIViewController {
-    
-    public typealias HeroBrowserDidLongPressHandle = (_ heroBrowser: HeroBrowser, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> ()
+
+    public typealias HeroBrowserDidLongPressHandle = (_ heroBrowser: HeroBrowser, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
+    public typealias HeroBrowserWillDismissHandle = (_ currentIndex: Int, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
+
     public var heroBrowserDidLongPressHandle: HeroBrowserDidLongPressHandle?
-    
+    public var willDismissHandle: HeroBrowserWillDismissHandle?
+
     lazy var effect = { UIBlurEffect(style: .dark) }()
     var blurEffectView: UIVisualEffectView?
     

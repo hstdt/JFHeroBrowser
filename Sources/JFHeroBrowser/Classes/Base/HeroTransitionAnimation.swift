@@ -84,6 +84,9 @@ public class HeroTransitionAnimation: NSObject {
     }
     
     static func dismiss(transitonContext: UIViewControllerContextTransitioning, animationType: HeroTransitionAnimationType, heroBrowser: HeroBrowser) {
+
+        heroBrowser.willDismissHandle?(heroBrowser.currentIndex, heroBrowser._viewModules![heroBrowser.currentIndex])
+
         guard let fromVC = transitonContext.viewController(forKey:.from),
               let toVC = transitonContext.viewController(forKey:.to) else
         {

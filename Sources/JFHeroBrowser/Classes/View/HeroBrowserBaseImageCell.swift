@@ -8,7 +8,8 @@
 import UIKit
 
 open class HeroBrowserBaseImageCell: UICollectionViewCell {
-    
+
+    weak public var browser: HeroBrowser?
     public var closeBlock: CloseBlock?
     public var updatedContainerScaleBlock: UpdatedContainerScaleBlock?
     public var beginTouchPoint: CGPoint = .zero
@@ -147,6 +148,9 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
             self.beginFrame = self.container.frame
             self.beginTouchPoint = gest.location(in: self.scrollView)
             self.beginDragHandle()
+            if let browser = self.browser {
+                browser.willDismissHandle?(browser.currentIndex, self.viewModule!)
+            }
             break
         case .changed:
             self.container.frame = self.getRectForPan(pan: gest)

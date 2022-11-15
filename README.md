@@ -69,6 +69,10 @@ var list: [HeroBrowserViewModule] = []
                     guard let btn = self.view.viewWithTag(imageIndex + 1) as? UIButton else { return nil }
                     return btn.imageView
                 }),
+                .heroBrowserWillDismissHandle({ _, _ in
+                    // resume audio playing
+                    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+                })
             ]
         }
 

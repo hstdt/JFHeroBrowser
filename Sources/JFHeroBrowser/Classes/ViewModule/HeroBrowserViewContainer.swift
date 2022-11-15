@@ -12,6 +12,8 @@ public protocol HeroBrowserCollectionCellProtocol: UICollectionViewCell {
     typealias UpdatedContainerScaleBlock = (CGFloat) -> Void
     typealias CloseBlock = () -> Void
     static func identify() -> String
+
+    var browser: HeroBrowser? { get }
     
     var viewModule: HeroBrowserViewModule? { get set }
     var videoViewModule: HeroBrowserVideoViewModule? { get set }

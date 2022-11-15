@@ -8,6 +8,7 @@
 
 import UIKit
 import JFHeroBrowser
+import AVFAudio
 
 class DataImageViewController: UIViewController {
     
@@ -56,7 +57,7 @@ class DataImageViewController: UIViewController {
     func loadImage() {
         for i in 0...4 {
             let img = UIImage(named: "template-\(i+1)")
-            if let img = img, let data = UIImageJPEGRepresentation(img, 0.8) {
+            if let img = img, let data = img.jpegData(compressionQuality: 0.8) {
                 self.imageSource.append(data)
             }
             let button = self.view.viewWithTag(i+1) as? UIButton
@@ -79,6 +80,10 @@ class DataImageViewController: UIViewController {
                     guard let self = self else { return nil }
                     guard let btn = self.view.viewWithTag(imageIndex + 1) as? UIButton else { return nil }
                     return btn.imageView
+                }),
+                .heroBrowserWillDismissHandle({ _, _ in
+                    // 恢复后台音频
+                    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
                 })
             ]
         }

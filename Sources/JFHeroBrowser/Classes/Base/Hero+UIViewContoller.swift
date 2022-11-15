@@ -15,6 +15,7 @@ public extension Hero where Base: UIViewController {
     func browserVideo(viewModule: HeroBrowserVideoViewModule, options: (() -> [JFHeroBrowserOption])? = nil) {
         var heroImageView: UIImageView?
         var imageDidChangeHandle: HeroBrowser.ImagePageDidChangeHandle?
+        var heroBrowserWillDismissHandle: HeroBrowser.HeroBrowserWillDismissHandle?
         var heroBrowserDidLongPressHandle: HeroBrowser.HeroBrowserDidLongPressHandle?
         
         var config = JFHeroBrowserGlobalConfig.default
@@ -24,25 +25,23 @@ public extension Hero where Base: UIViewController {
                 switch option {
                 case .heroBrowserDidLongPressHandle(let handle):
                     heroBrowserDidLongPressHandle = handle
-                    break
+                case .heroBrowserWillDismissHandle(let heroBrowserWillDismiss):
+                    heroBrowserWillDismissHandle = heroBrowserWillDismiss
                 case .enableBlurEffect(let enable):
                     config.enableBlurEffect = enable
-                    break
                 case .heroView(let uIImageView):
                     heroImageView = uIImageView
-                    break
                 case .imageDidChangeHandle(let heroBrowserImageDidChange):
                     imageDidChangeHandle = heroBrowserImageDidChange
-                    break
                 case .pageControlType(let pageControlerType):
                     config.pageControlType = pageControlerType
-                    break
                 }
             }
         }
         
         let vc = HeroBrowser(viewModules: [viewModule], index: 0, heroImageView: heroImageView, imagePageDidChangeHandle: imageDidChangeHandle, config: config)
         vc.heroBrowserDidLongPressHandle = heroBrowserDidLongPressHandle
+        vc.willDismissHandle = heroBrowserWillDismissHandle
         vc.show(with: base)
     }
     
@@ -51,6 +50,7 @@ public extension Hero where Base: UIViewController {
         var heroImageView: UIImageView?
         var imageDidChangeHandle: HeroBrowser.ImagePageDidChangeHandle?
         var heroBrowserDidLongPressHandle: HeroBrowser.HeroBrowserDidLongPressHandle?
+        var heroBrowserWillDismissHandle: HeroBrowser.HeroBrowserWillDismissHandle?
         var config = JFHeroBrowserGlobalConfig.default
         config.enableBlurEffect = JFHeroBrowserGlobalConfig.default.enableBlurEffect
         if let allOptions = options?() {
@@ -58,19 +58,16 @@ public extension Hero where Base: UIViewController {
                 switch option {
                 case .heroBrowserDidLongPressHandle(let handle):
                     heroBrowserDidLongPressHandle = handle
-                    break
+                case .heroBrowserWillDismissHandle(let heroBrowserWillDismiss):
+                    heroBrowserWillDismissHandle = heroBrowserWillDismiss
                 case .enableBlurEffect(let enable):
                     config.enableBlurEffect = enable
-                    break
                 case .heroView(let uIImageView):
                     heroImageView = uIImageView
-                    break
                 case .imageDidChangeHandle(let heroBrowserImageDidChange):
                     imageDidChangeHandle = heroBrowserImageDidChange
-                    break
                 case .pageControlType(let pageControlType):
                     config.pageControlType = pageControlType
-                    break
                 }
             }
         }
@@ -80,6 +77,7 @@ public extension Hero where Base: UIViewController {
         }
         let vc = HeroBrowser(viewModules: viewModules, index: initIndex, heroImageView: heroImageView, imagePageDidChangeHandle: imageDidChangeHandle, config: config)
         vc.heroBrowserDidLongPressHandle = heroBrowserDidLongPressHandle
+        vc.willDismissHandle = heroBrowserWillDismissHandle
         vc.show(with: base)
     }
     
@@ -88,26 +86,24 @@ public extension Hero where Base: UIViewController {
         var heroImageView: UIImageView?
         var imageDidChangeHandle: HeroBrowser.ImagePageDidChangeHandle?
         var heroBrowserDidLongPressHandle: HeroBrowser.HeroBrowserDidLongPressHandle?
-        
+        var heroBrowserWillDismissHandle: HeroBrowser.HeroBrowserWillDismissHandle?
+
         var config = JFHeroBrowserGlobalConfig.multiSource
         if let allOptions = options?() {
             for option in allOptions {
                 switch option {
                 case .heroBrowserDidLongPressHandle(let handle):
                     heroBrowserDidLongPressHandle = handle
-                    break
+                case .heroBrowserWillDismissHandle(let heroBrowserWillDismiss):
+                    heroBrowserWillDismissHandle = heroBrowserWillDismiss
                 case .enableBlurEffect(let enable):
                     config.enableBlurEffect = enable
-                    break
                 case .heroView(let uIImageView):
                     heroImageView = uIImageView
-                    break
                 case .imageDidChangeHandle(let heroBrowserImageDidChange):
                     imageDidChangeHandle = heroBrowserImageDidChange
-                    break
                 case .pageControlType(let pageControlType):
                     config.pageControlType = pageControlType
-                    break
                 }
             }
         }
@@ -117,6 +113,7 @@ public extension Hero where Base: UIViewController {
         }
         let vc = HeroBrowser(viewModules: viewModules, index: initIndex, heroImageView: heroImageView, imagePageDidChangeHandle: imageDidChangeHandle, config: config)
         vc.heroBrowserDidLongPressHandle = heroBrowserDidLongPressHandle
+        vc.willDismissHandle = heroBrowserWillDismissHandle
         vc.show(with: base)
     }
 }
