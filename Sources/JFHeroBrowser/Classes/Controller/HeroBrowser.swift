@@ -82,9 +82,11 @@ open class HeroBrowser: UIViewController {
 
     public typealias HeroBrowserDidLongPressHandle = (_ heroBrowser: HeroBrowser, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
     public typealias HeroBrowserWillDismissHandle = (_ currentIndex: Int, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
+    public typealias HeroBrowserDidDismissHandle = (_ currentIndex: Int, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
 
     public var heroBrowserDidLongPressHandle: HeroBrowserDidLongPressHandle?
     public var willDismissHandle: HeroBrowserWillDismissHandle?
+    public var didDismissHandle: HeroBrowserDidDismissHandle?
 
     lazy var effect = { UIBlurEffect(style: .dark) }()
     var blurEffectView: UIVisualEffectView?
@@ -234,7 +236,10 @@ open class HeroBrowser: UIViewController {
     
     public func hide(with completion: (() -> Void)?) {
         self.isShow = false
-        self.dismiss(animated: true, completion: completion)
+        self.dismiss(animated: true, completion: {
+            self.didDismissHandle?(self.currentIndex, self._viewModules![self.currentIndex])
+            completion?()
+        })
     }
     
     func switchToPage(index: Int) {

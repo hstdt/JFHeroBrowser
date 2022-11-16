@@ -36,6 +36,7 @@ public enum JFHeroBrowserOption {
     case heroView(UIImageView?)
     case heroBrowserDidLongPressHandle(HeroBrowser.HeroBrowserDidLongPressHandle)
     case heroBrowserWillDismissHandle(HeroBrowser.HeroBrowserWillDismissHandle)
+    case heroBrowserDidDismissHandle(HeroBrowser.HeroBrowserDidDismissHandle)
     case imageDidChangeHandle(HeroBrowser.ImagePageDidChangeHandle)
 }
 
