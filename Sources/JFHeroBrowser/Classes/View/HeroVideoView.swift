@@ -52,7 +52,8 @@ public class HeroVideoView: HeroPlayerView {
     
     var seekTime: CMTime? = nil
     var isFadeToDisplay: Bool = false
-    
+    var vm: HeroBrowserVideoViewModule!
+
     var player: AVPlayer? { playerLayer.player }
     
     var playerItem: AVPlayerItem? {
@@ -214,7 +215,6 @@ public class HeroVideoView: HeroPlayerView {
     
     @objc func playerItemDidPlayToEnd(noti: Notification) {
         self.repeatCount += 1
-        self.resumeBackgroundSound()
         let time = CMTime(value: CMTimeValue(0.2), timescale: 1)
         self.player?.seek(to: time)
         self.pauseVideo()

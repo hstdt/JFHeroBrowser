@@ -22,7 +22,10 @@ extension HeroBrowserVideoCell: HeroVideoViewDelegate {
     }
     
     func videoViewPlayerDidPlayToEnd(noti: Notification, view: HeroVideoView) {
-        self.videoView.playVideo()
+        if self.videoView.vm.isAutoLoop {
+            self.videoView.playVideo()
+        }
+
     }
     
     func videoViewPlayerStatusDidChange(state: HeroVideoPlayerState, view: HeroVideoView) {
@@ -90,6 +93,7 @@ class HeroBrowserVideoCell: HeroBrowserBaseImageCell {
     
     override func beginLoadSource() {
         guard let vm = videoViewModule else { return }
+        videoView.vm = videoViewModule
         vm.asyncLoadThumbailSource { result in
             switch result {
             case let .success(image):
