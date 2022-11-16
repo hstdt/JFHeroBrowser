@@ -326,13 +326,23 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
         if let cell = self.collectionView.cellForItem(at: self.currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
             cell.resetZoom()
         }
+
+        if let cell = self.collectionView.cellForItem(at: self.currentIndexPath()) as? HeroBrowserVideoCell {
+            if cell.videoView.player?.rate == 0 || cell.videoView.currentTime < 2 { // currentTime为1还是会响应
+                return // 避免在开始播放的时候想暂停，误操作导致dismiss
+            }
+            cell.videoView.resetPlayer()
+        }
+
         self.hide(with: nil)
     }
 
     @objc func handleDoubleFingerEvent(gesture: UIGestureRecognizer) {
         let touchLocation: CGPoint = gesture.location(in: gesture.view)
         if let cell = self.collectionView.cellForItem(at: self.currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
-            cell.doubleTap(location: touchLocation)
+            if cell.videoViewModule == nil { // 避免视频readyToPlay阶段的双击
+                cell.doubleTap(location: touchLocation)
+            }
         }
     }
     
