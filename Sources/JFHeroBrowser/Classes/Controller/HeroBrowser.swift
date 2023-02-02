@@ -111,9 +111,6 @@ open class HeroBrowser: UIViewController {
         view.isPagingEnabled = true
         view.panGestureRecognizer.delaysTouchesBegan = true // 避免视频播放按钮对手势的干扰
         view.showsHorizontalScrollIndicator = false
-        view.register(HeroBrowserNetworkImageCell.self, forCellWithReuseIdentifier: HeroBrowserNetworkImageCell.identify())
-        view.register(HeroBrowserVideoCell.self, forCellWithReuseIdentifier: HeroBrowserVideoCell.identify())
-        view.register(HeroBrowserBaseImageCell.self, forCellWithReuseIdentifier: HeroBrowserBaseImageCell.identify())
         if #available(iOS 11.0, *) {
             view.contentInsetAdjustmentBehavior = .never
         }
@@ -223,6 +220,7 @@ open class HeroBrowser: UIViewController {
         self.updatepageControlContainer(index: index)
         self.indexChangeHandle(index: index)
         self.prefetchImages()
+        self.registerCells()
     }
     
     public func show(with vc: UIViewController, animationType: HeroTransitionAnimationType = .hero) {
@@ -264,6 +262,13 @@ open class HeroBrowser: UIViewController {
     @objc func changePage(pageControl: UIPageControl) {
         self.updateHeroView(index: pageControl.currentPage)
         self.switchToPage(index: pageControl.currentPage)
+    }
+    
+    //register collectionView cell
+    private func registerCells() {
+        _viewModules?.forEach { module in
+            self.collectionView.register(module.cellClz, forCellWithReuseIdentifier: module.identity)
+        }
     }
     
     // 预加载左右各一张
@@ -407,7 +412,7 @@ extension HeroBrowser: UICollectionViewDelegate,UICollectionViewDataSource,UIScr
         guard let vm = _viewModules?[indexPath.item] else {
             return
         }
-        guard let cell = cell as? HeroBrowserBaseImageCell else { return }
+        guard var cell = cell as? HeroBrowserHostedCellProtocol else { return }
         if let vm = vm as? HeroBrowserViewModule {
             cell.viewModule = vm
         } else if let vm = vm as? HeroBrowserVideoViewModule {
@@ -416,8 +421,11 @@ extension HeroBrowser: UICollectionViewDelegate,UICollectionViewDataSource,UIScr
     }
     
     public func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        if let videoCell = cell as? HeroBrowserVideoCell {
-            videoCell.videoView.pauseVideo()
+        if let cell = cell as? HeroBrowserCollectionCellProtocol {
+            cell.resetZoom()
+        }
+        if let videoCell = cell as? HeroBrowserVideoCellProtocol {
+            videoCell.pauseVideo()
         }
     }
     

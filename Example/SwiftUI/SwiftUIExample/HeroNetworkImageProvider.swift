@@ -11,7 +11,7 @@ import JFHeroBrowser
 import Kingfisher
 
 extension HeroNetworkImageProvider: NetworkImageProvider {
-    func downloadImage(with imgUrl: String, complete: Complete<UIImage>?) {
+    func downloadImage(with imgUrl: String, complete: Complete<(UIImage, Data?)>?) {
         KingfisherManager.shared.retrieveImage(with: URL(string: imgUrl)!, options: nil) { receiveSize, totalSize in
             guard totalSize > 0 else { return }
             let progress:CGFloat = CGFloat(CGFloat(receiveSize) / CGFloat(totalSize))
@@ -21,7 +21,7 @@ extension HeroNetworkImageProvider: NetworkImageProvider {
         } completionHandler: { result in
             switch result {
             case .success(let loadingImageResult):
-                complete?(.success(loadingImageResult.image))
+                complete?(.success((loadingImageResult.image, loadingImageResult.data())))
                 break
             case .failure(let error):
                 complete?(.failed(error))
@@ -29,6 +29,7 @@ extension HeroNetworkImageProvider: NetworkImageProvider {
             }
         }
     }
+
 }
 
 class HeroNetworkImageProvider: NSObject {
