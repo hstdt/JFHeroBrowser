@@ -25,8 +25,9 @@ public struct JFHeroBrowserGlobalConfig {
         self.networkImageProvider = networkImageProvider
         self.pageControlType = pageControlType
     }
-    
+    nonisolated(unsafe)
     public static var `default` = JFHeroBrowserGlobalConfig(true, networkImageProvider: nil, pageControlType: .pageControl)
+    nonisolated(unsafe)
     public static var multiSource = JFHeroBrowserGlobalConfig(false, networkImageProvider: nil, pageControlType: .none)
 }
 
