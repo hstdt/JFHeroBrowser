@@ -85,15 +85,19 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
     }
 
     func updateContainerFrame(with image: UIImage) {
+        self.updateContainerFrame(size: image.size)
+    }
+
+    func updateContainerFrame(size: CGSize) {
         guard let screenWidth = self.window?.frame.size.width, let screenHeight = self.window?.frame.size.height else { return }
         self.scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight))
         self.scrollView.addGestureRecognizer(panGesture)
         if screenWidth < screenHeight {
-            let height = image.size.height * screenWidth / image.size.width
+            let height = size.height * screenWidth / size.width
             self.container.frame = CGRect(x: 0, y: 0, width: screenWidth, height: height)
             self.scrollView.contentSize = CGSize(width: self.container.frame.size.width, height: self.container.frame.size.height)
         } else {
-            let width = image.size.width * screenHeight / image.size.height
+            let width = size.width * screenHeight / size.height
             self.container.frame = CGRect(x: 0, y: 0, width: width, height: screenHeight)
             self.scrollView.contentSize = CGSize(width: self.container.frame.size.width, height: self.container.frame.size.height)
         }

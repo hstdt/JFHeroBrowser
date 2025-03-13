@@ -23,6 +23,10 @@ extension HeroBrowserVideoCell: HeroBrowserVideoCellProtocol {
 extension HeroBrowserVideoCell: HeroVideoViewDelegate {
     func videoViewReadyToPlay(playerItem: AVPlayerItem, view: HeroVideoView) {
         self.loadingImageV.isHidden = true
+        // 图片还没加载或加载失败,使用视频的size来更新frame
+        if self.scrollView.frame == .zero, let size = view.player?.currentItem?.actualVideoSize() {
+            self.updateContainerFrame(size: size)
+        }
     }
 
     func videoViewPlayerPlayingProgress(currentTime: Double, totalTime: Double, view: HeroVideoView) {
@@ -206,4 +210,38 @@ class HeroBrowserVideoCell: HeroBrowserBaseImageCell {
         self.videoView.playVideo()
     }
 
+}
+
+private extension AVPlayerItem {
+    func actualVideoSize() -> CGSize? {
+        /*
+         if #available(iOS 16, *) {
+             guard let track = try await asset.loadTracks(withMediaType: .video).first else { return nil }
+             let size = try await track.load(.naturalSize)
+             return size
+         }
+         */
+        // 获取视频轨道的 naturalSize
+        guard let videoTrack = asset.tracks(withMediaType: .video).first else {
+            return nil
+        }
+        let naturalSize = videoTrack.naturalSize
+
+        // 获取视频的 preferredTransform
+        let preferredTransform = videoTrack.preferredTransform
+
+        // 根据 preferredTransform 计算实际尺寸
+        let actualSize: CGSize
+        if preferredTransform.isIdentity {
+            // 如果没有变换，直接使用 naturalSize
+            actualSize = naturalSize
+        } else {
+            // 如果有变换，计算变换后的尺寸
+            let width = abs(naturalSize.width * preferredTransform.a) + abs(naturalSize.height * preferredTransform.c)
+            let height = abs(naturalSize.width * preferredTransform.b) + abs(naturalSize.height * preferredTransform.d)
+            actualSize = CGSize(width: width, height: height)
+        }
+
+        return actualSize
+    }
 }
