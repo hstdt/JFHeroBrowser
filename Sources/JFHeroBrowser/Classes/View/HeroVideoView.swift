@@ -145,6 +145,7 @@ public class HeroVideoView: HeroPlayerView {
             self.playerItem = AVPlayerItem(asset: asset)
         } else if let item = self.originPlayerItem {
             self.playerItem = item
+            self.videoURL = (item.asset as? AVURLAsset)?.url
         }
         
         let player = AVPlayer(playerItem: self.playerItem!)
