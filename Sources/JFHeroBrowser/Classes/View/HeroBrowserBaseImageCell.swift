@@ -40,6 +40,13 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         return tempView
     }()
 
+    lazy var panGesture: UIPanGestureRecognizer = {
+        // scrollView设置frame之前把手势放在cell上,设置之后才放在ScrollView上.避免空白的时候无法交互
+        let gesture: UIPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(onPan(gest:)))
+        gesture.delegate = self
+        return gesture
+    }()
+
     public var videoViewModule: HeroBrowserVideoViewModule? {
         didSet {
             self.beginLoadSource()
@@ -80,6 +87,7 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
     func updateContainerFrame(with image: UIImage) {
         guard let screenWidth = self.window?.frame.size.width, let screenHeight = self.window?.frame.size.height else { return }
         self.scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight))
+        self.scrollView.addGestureRecognizer(panGesture)
         if screenWidth < screenHeight {
             let height = image.size.height * screenWidth / image.size.width
             self.container.frame = CGRect(x: 0, y: 0, width: screenWidth, height: height)
@@ -119,10 +127,7 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         self.addSubview(self.scrollView)
         self.scrollView.addSubview(self.container)
         self.container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-
-        let panGest: UIPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(onPan(gest:)))
-        panGest.delegate = self
-        self.scrollView.addGestureRecognizer(panGest)
+        self.addGestureRecognizer(panGesture)
     }
 
     required public init?(coder: NSCoder) {
