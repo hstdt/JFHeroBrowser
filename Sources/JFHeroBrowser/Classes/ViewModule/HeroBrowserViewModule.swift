@@ -25,7 +25,7 @@ public enum HeroBrowserResult<T> {
 }
 
 public protocol NetworkImageProvider: AnyObject {
-    typealias Complete<T> = (HeroBrowserResult<T>) -> ()
+    typealias Complete<T> = (HeroBrowserResult<T>) -> Void
     func downloadImage(with imgUrl: String, complete: Complete<(UIImage, Data?)>?)
 }
 
@@ -39,20 +39,20 @@ public protocol HeroBrowserViewModuleBaseProtocol {
 public protocol HeroBrowserViewModuleProtocol: HeroBrowserViewModuleBaseProtocol {
     associatedtype ThumbailData
     associatedtype RawData
-    typealias Complete<T> = (HeroBrowserResult<T>) -> ()
+    typealias Complete<T> = (HeroBrowserResult<T>) -> Void
     func asyncLoadThumbailSource(with complete: Complete<ThumbailData>?)
     func asyncLoadRawSource(with complete: Complete<RawData>?)
 }
 
 open class HeroBrowserViewModule: HeroBrowserViewModuleProtocol {
     open var identity: String {
-        return ""
+        ""
     }
-    
+
     open var cellClz: AnyClass? {
-        return nil
+        nil
     }
-    
+
     public typealias ThumbailData = UIImage
     public typealias RawData = (UIImage, Data?)
     open var type: HeroBrowserType
@@ -66,13 +66,13 @@ open class HeroBrowserViewModule: HeroBrowserViewModuleProtocol {
         self.type = type
     }
     open func createCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> HeroBrowserCollectionCellProtocol {
-        return collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserBaseImageCell.identify(), for: indexPath) as! HeroBrowserBaseImageCell
+        collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserBaseImageCell.identify(), for: indexPath) as! HeroBrowserBaseImageCell
     }
 }
 
 extension HeroBrowserViewModule: HeroCompatible {}
 extension Hero where Base: HeroBrowserViewModule {
     static func localImageVM(image: UIImage) -> HeroBrowserViewModule {
-        return HeroBrowserLocalImageViewModule(image: image)
+        HeroBrowserLocalImageViewModule(image: image)
     }
 }

@@ -33,11 +33,11 @@ let origins: [String] = {
 }()
 
 struct ContentView: View {
-    
+
     @State var columns = [
         GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())
     ]
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -98,7 +98,7 @@ struct ImageCell: View {
                     }
                     .foregroundColor(.gray)
                 }
-                
+
                 .cornerRadius(20)
 
             Spacer()

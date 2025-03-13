@@ -11,7 +11,7 @@ import JFHeroBrowser
 import AVFAudio
 
 class DataImageViewController: UIViewController {
-    
+
     var imageSource: [Data] = []
 
     override func viewDidLoad() {
@@ -53,19 +53,18 @@ class DataImageViewController: UIViewController {
             self.loadImage()
         }
     }
-    
+
     func loadImage() {
         for i in 0...4 {
-            let img = UIImage(named: "template-\(i+1)")
+            let img = UIImage(named: "template-\(i + 1)")
             if let img = img, let data = img.jpegData(compressionQuality: 0.8) {
                 self.imageSource.append(data)
             }
-            let button = self.view.viewWithTag(i+1) as? UIButton
+            let button = self.view.viewWithTag(i + 1) as? UIButton
             button?.setImage(img, for: .normal)
         }
     }
-    
-    
+
     @objc func btnClick(button: UIButton) {
         if imageSource.count < 5 { return }
         var list: [HeroBrowserViewModule] = []

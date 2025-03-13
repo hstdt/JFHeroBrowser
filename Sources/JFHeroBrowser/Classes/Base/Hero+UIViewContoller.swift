@@ -10,7 +10,7 @@ import UIKit
 extension UIViewController: HeroCompatible {}
 
 public extension Hero where Base: UIViewController {
-    
+
     ///browser single video if you want to browser multi video please see (func browserMultiSoures)
     func browserVideo(viewModule: HeroBrowserVideoViewModule, options: (() -> [JFHeroBrowserOption])? = nil) {
         var heroImageView: UIImageView?
@@ -41,14 +41,14 @@ public extension Hero where Base: UIViewController {
                 }
             }
         }
-        
+
         let vc = HeroBrowser(viewModules: [viewModule], index: 0, heroImageView: heroImageView, imagePageDidChangeHandle: imageDidChangeHandle, config: config)
         vc.heroBrowserDidLongPressHandle = heroBrowserDidLongPressHandle
         vc.willDismissHandle = heroBrowserWillDismissHandle
         vc.didDismissHandle = heroBrowserDidDismissHandle
         vc.show(with: base)
     }
-    
+
     ///browser photos
     func browserPhoto(viewModules: [HeroBrowserViewModule], initIndex: Int, options: (() -> [JFHeroBrowserOption])? = nil) {
         var heroImageView: UIImageView?
@@ -79,7 +79,7 @@ public extension Hero where Base: UIViewController {
                 }
             }
         }
-        
+
         if let vm = viewModules.first as? HeroBrowserNetworkImageViewModule {
             assert(vm.imageProvider != nil, "imageProvider == nil, please setup your custom imageProvider in JFHeroBrowserGlobalConfig.default.networkImageProvider property use Kingfisher or SDWebImage or your custom imag caches to implements")
         }
@@ -89,7 +89,7 @@ public extension Hero where Base: UIViewController {
         vc.didDismissHandle = heroBrowserDidDismissHandle
         vc.show(with: base)
     }
-    
+
     ///multi video + photo
     func browserMultiSoures(viewModules: [HeroBrowserViewModuleBaseProtocol], initIndex: Int, options: (() -> [JFHeroBrowserOption])? = nil) {
         var heroImageView: UIImageView?
@@ -119,7 +119,7 @@ public extension Hero where Base: UIViewController {
                 }
             }
         }
-        
+
         if let vm = viewModules.first as? HeroBrowserNetworkImageViewModule {
             assert(vm.imageProvider != nil, "imageProvider == nil, please setup your custom imageProvider in JFHeroBrowserGlobalConfig.default.networkImageProvider property use Kingfisher or SDWebImage or your custom imag caches to implements")
         }

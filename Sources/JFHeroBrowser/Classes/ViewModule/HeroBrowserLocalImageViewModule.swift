@@ -9,25 +9,25 @@ import UIKit
 
 open class HeroBrowserLocalImageViewModule: HeroBrowserViewModule {
     open override var identity: String {
-        return HeroBrowserBaseImageCell.identify()
+        HeroBrowserBaseImageCell.identify()
     }
-    
+
     open override var cellClz: AnyClass? {
-        return HeroBrowserBaseImageCell.self
+        HeroBrowserBaseImageCell.self
     }
-    
+
     public override func createCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> HeroBrowserCollectionCellProtocol {
-        return collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserBaseImageCell.identify(), for: indexPath) as! HeroBrowserBaseImageCell
+        collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserBaseImageCell.identify(), for: indexPath) as! HeroBrowserBaseImageCell
     }
-    
+
     public override func asyncLoadThumbailSource(with complete: HeroBrowserViewModule.Complete<UIImage>?) {
         complete?(.success(self.image))
     }
-    
+
     public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<RawData>?) {
         complete?(.success((self.image, self.imageData)))
     }
-    
+
     var image: UIImage
     var imageData: Data?
     public init(image: UIImage, imageData: Data? = nil) {

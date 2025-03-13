@@ -8,7 +8,6 @@
 
 import UIKit
 import Kingfisher
-import UIKit
 import Foundation
 import MobileCoreServices
 import Photos
@@ -26,31 +25,31 @@ let demoTypes: [HeroBrowserDemoType] = [
     .dataImage,
     .networkImage,
     .networkSDWebImage,
-    .networkVideo,
+    .networkVideo
 ]
 
 class ViewController: UIViewController {
 
     @IBOutlet weak var tableView: UITableView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "JFHeroBrowser Demo"
         self.tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
     }
-    
+
 }
 
-extension ViewController: UITableViewDataSource,UITableViewDelegate {
-    
+extension ViewController: UITableViewDataSource, UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 50
+        50
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return demoTypes.count
+        demoTypes.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let type = demoTypes[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell", for: indexPath)
@@ -58,7 +57,7 @@ extension ViewController: UITableViewDataSource,UITableViewDelegate {
         cell.accessoryType = .disclosureIndicator
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let type = demoTypes[indexPath.row]
@@ -66,15 +65,12 @@ extension ViewController: UITableViewDataSource,UITableViewDelegate {
         case .dataImage:
             let vc = DataImageViewController()
             navigationController?.pushViewController(vc, animated: true)
-            break
         case .localImage:
             let vc = LocalImageViewController()
             navigationController?.pushViewController(vc, animated: true)
-            break
         case .networkImage:
             let vc = NetworkImageViewController()
             navigationController?.pushViewController(vc, animated: true)
-            break
         case .networkVideo:
             let vc = NetworkVideoViewController()
             navigationController?.pushViewController(vc, animated: true)
@@ -85,4 +81,3 @@ extension ViewController: UITableViewDataSource,UITableViewDelegate {
         }
     }
 }
-

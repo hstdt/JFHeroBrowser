@@ -8,7 +8,7 @@
 import UIKit
 
 class HeroCircularProgressView: UIView {
-    
+
     var progress: Double = 0.0 {
         willSet {
             if newValue > 1 {
@@ -23,21 +23,21 @@ class HeroCircularProgressView: UIView {
             self.setNeedsDisplay()
         }
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.backgroundColor = .clear
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     class func commonImageProgressView() -> HeroCircularProgressView {
         let progressView = HeroCircularProgressView(frame: CGRect(x: 0, y: 0, width: 24, height: 24))
         return progressView
     }
-    
+
     override func draw(_ rect: CGRect) {
         let size = rect.size
         let originP = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -49,12 +49,12 @@ class HeroCircularProgressView: UIView {
         UIColor.jf.rgb(0xD8D8D8).set()
         circularPath.fill()
     }
-    
+
 }
 
 extension HeroCircularProgressView: HeroCompatible {}
 extension Hero where Base: HeroCircularProgressView {
     static func progressView() -> HeroCircularProgressView {
-        return HeroCircularProgressView.commonImageProgressView()
+        HeroCircularProgressView.commonImageProgressView()
     }
 }

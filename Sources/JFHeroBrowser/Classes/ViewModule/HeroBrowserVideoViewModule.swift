@@ -11,17 +11,17 @@ import AVFoundation
 /// Video VM, support network video or local file path video
 open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
     open var identity: String {
-        return HeroBrowserVideoCell.identify()
+        HeroBrowserVideoCell.identify()
     }
-    
+
     open var cellClz: AnyClass? {
-        return HeroBrowserVideoCell.self
+        HeroBrowserVideoCell.self
     }
-    
+
     public typealias ThumbailData = UIImage
     public typealias RawData = AVPlayerItem
     open var type: HeroBrowserType
-    
+
     open func asyncLoadThumbailSource(with complete: Complete<UIImage>?) {
         guard let thumbailImgUrl = self.thumbailImgUrl else {
             complete?(.failed(nil))
@@ -38,7 +38,7 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
             }
         })
     }
-    
+
     open func asyncLoadRawSource(with complete: Complete<AVPlayerItem>?) {
         guard let url = self.videoURL else {
             complete?(.failed(nil))
@@ -47,11 +47,11 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
         let asset = AVURLAsset(url: url)
         complete?(.success(AVPlayerItem(asset: asset)))
     }
-    
+
     open func createCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> HeroBrowserCollectionCellProtocol {
-        return collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserVideoCell.identify(), for: indexPath) as! HeroBrowserVideoCell
+        collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserVideoCell.identify(), for: indexPath) as! HeroBrowserVideoCell
     }
-    
+
     open weak var imageProvider: NetworkImageProvider?
     open var thumbailImgUrl: String?
     open var videoURL: URL?
@@ -61,7 +61,7 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
     public init(type: HeroBrowserType) {
         self.type = type
     }
-    
+
     public init(thumbailImgUrl: String?, fileUrlPath: String, provider: NetworkImageProvider? = JFHeroBrowserGlobalConfig.default.networkImageProvider, autoPlay: Bool = true, autoLoop: Bool = false) {
         self.thumbailImgUrl = thumbailImgUrl
         self.videoURL = URL(fileURLWithPath: fileUrlPath)
@@ -70,7 +70,7 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
         self.isAutoLoop = autoLoop
         self.type = .localVideo
     }
-    
+
     public init(thumbailImgUrl: String?, videoUrl: String, provider: NetworkImageProvider? = JFHeroBrowserGlobalConfig.default.networkImageProvider, autoPlay: Bool = true, autoLoop: Bool = false) {
         self.thumbailImgUrl = thumbailImgUrl
         self.videoURL = URL(string: videoUrl)

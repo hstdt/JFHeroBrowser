@@ -12,18 +12,17 @@ public enum HeroTransitionAnimationType {
 }
 
 public class HeroTransitionAnimation: NSObject {
-    
+
     static func present(transitonContext: UIViewControllerContextTransitioning, animationType: HeroTransitionAnimationType, heroBrowser: HeroBrowser) {
         guard let fromVC = transitonContext.viewController(forKey:.from),
-              let toVC = transitonContext.viewController(forKey:.to) else
-              {
+              let toVC = transitonContext.viewController(forKey:.to) else {
                   transitonContext.completeTransition(true)
                   return
               }
         toVC.view.frame = fromVC.view.frame
         let containerView = transitonContext.containerView
         containerView.addSubview(toVC.view)
-        
+
         var cornerRadius: CGFloat = 0
         guard confirmOriginImageViewInfo(convertTo: fromVC.view, &cornerRadius, heroBrowser: heroBrowser), let originImage = heroBrowser.heroImage else {
             toVC.view.alpha = 0
@@ -36,13 +35,13 @@ public class HeroTransitionAnimation: NSObject {
         }
         let screenSize = fromVC.view.frame.size
         var moveFrame: CGRect = .zero
-        
+
         if screenSize.width < screenSize.height {
             let moveW = screenSize.width
             let moveH = originImage.size.height * screenSize.width / originImage.size.width
             var moveY: CGFloat = 0.0
             if moveH < screenSize.height {
-                moveY = HalfDiffValue(screenSize.height, moveH)
+                moveY = halfDiffValue(screenSize.height, moveH)
             }
             moveFrame = CGRect(x: 0.0, y: moveY, width: moveW, height: moveH)
         } else {
@@ -50,18 +49,18 @@ public class HeroTransitionAnimation: NSObject {
             let moveW = originImage.size.width * moveH / originImage.size.height
             var moveX: CGFloat = 0.0
             if moveW < screenSize.width {
-                moveX = HalfDiffValue(screenSize.width, moveW)
+                moveX = halfDiffValue(screenSize.width, moveW)
             }
             moveFrame = CGRect(x: moveX, y: 0, width: moveW, height: moveH)
         }
         heroBrowser.collectionView.isHidden = true
-        
+
         switch animationType {
         case .hero:
             for subView in heroBrowser.view.subviews {
                 subView.alpha = 0
             }
-            
+
             let moveImageView = UIImageView(frame: heroBrowser.heroFrame)
             moveImageView.contentMode = heroBrowser.heroContentMode
             moveImageView.image = originImage
@@ -79,25 +78,22 @@ public class HeroTransitionAnimation: NSObject {
                 transitonContext.completeTransition(true)
                 heroBrowser.collectionView.isHidden = false
             }
-            break
         }
     }
-    
+
     static func dismiss(transitonContext: UIViewControllerContextTransitioning, animationType: HeroTransitionAnimationType, heroBrowser: HeroBrowser) {
 
         heroBrowser.willDismissHandle?(heroBrowser.currentIndex, heroBrowser._viewModules![heroBrowser.currentIndex])
 
         guard let fromVC = transitonContext.viewController(forKey:.from),
-              let toVC = transitonContext.viewController(forKey:.to) else
-        {
+              let toVC = transitonContext.viewController(forKey:.to) else {
             transitonContext.completeTransition(true)
             return
         }
-        
+
         var cornerRadius: CGFloat = 0
         guard let cell = heroBrowser.collectionView.cellForItem(at: heroBrowser.currentIndexPath() as IndexPath) as? HeroBrowserCollectionCellProtocol,
-              confirmOriginImageViewInfo(convertTo: toVC.view, &cornerRadius, heroBrowser: heroBrowser) else
-        {
+              confirmOriginImageViewInfo(convertTo: toVC.view, &cornerRadius, heroBrowser: heroBrowser) else {
             UIView.animate(withDuration: 0.2) {
                 fromVC.view.alpha = 0
             } completion: { _ in
@@ -105,10 +101,10 @@ public class HeroTransitionAnimation: NSObject {
             }
             return
         }
-        
+
         let photoImageView = cell.getContainer()
         photoImageView.layer.masksToBounds = true
-        
+
         UIView.animate(withDuration: 0.2) {
             photoImageView.layer.cornerRadius = cornerRadius
             photoImageView.frame = heroBrowser.heroFrame
@@ -119,7 +115,7 @@ public class HeroTransitionAnimation: NSObject {
             transitonContext.completeTransition(true)
         }
     }
-    
+
     private static func confirmOriginImageViewInfo(convertTo toView: UIView, _ cornerRadius: inout CGFloat, heroBrowser: HeroBrowser) -> Bool {
         guard let heroImageView = heroBrowser.heroImageView, case .some = heroImageView.image,
               let oSuperview = heroImageView.superview else {
@@ -135,10 +131,10 @@ public class HeroTransitionAnimation: NSObject {
         cornerRadius = heroImageView.layer.cornerRadius
         return true
     }
-    
+
     /// 一半的差值
-    private static func HalfDiffValue(_ superValue: CGFloat, _ subValue: CGFloat) -> CGFloat {
+    private static func halfDiffValue(_ superValue: CGFloat, _ subValue: CGFloat) -> CGFloat {
         (superValue - subValue) * 0.5
     }
-    
+
 }

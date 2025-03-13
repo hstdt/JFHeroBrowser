@@ -14,15 +14,15 @@ public protocol HeroBrowserCollectionCellProtocol: UICollectionViewCell {
     static func identify() -> String
 
     var browser: HeroBrowser? { get }
-    
+
     var viewModule: HeroBrowserViewModule? { get set }
     var videoViewModule: HeroBrowserVideoViewModule? { get set }
-    
+
     var beginFrame: CGRect { get set }
     var beginTouchPoint : CGPoint { get set }
     var updatedContainerScaleBlock: UpdatedContainerScaleBlock? { get set }
     var closeBlock: CloseBlock? { get set }
-    
+
     func getContainer() -> UIView
     func resetZoom()
     func doubleTap(location: CGPoint)
@@ -32,4 +32,3 @@ extension HeroBrowserCollectionCellProtocol {
     func resetZoom() {}
     func doubleTap(location: CGPoint) {}
 }
-

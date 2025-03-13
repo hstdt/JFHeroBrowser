@@ -10,7 +10,7 @@ import UIKit
 import JFHeroBrowser
 
 class LocalImageViewController: UIViewController {
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "LocalImage"
@@ -47,25 +47,24 @@ class LocalImageViewController: UIViewController {
         button4.addTarget(self, action: #selector(btnClick(button:)), for: .touchUpInside)
         loadImage()
     }
-    
+
     func loadImage() {
         for i in 0...4 {
-            let img = UIImage(named: "template-\(i+1)")
+            let img = UIImage(named: "template-\(i + 1)")
             DispatchQueue.main.async {
-                let button = self.view.viewWithTag(i+1) as? UIButton
+                let button = self.view.viewWithTag(i + 1) as? UIButton
                 button?.setImage(img, for: .normal)
             }
         }
     }
-    
-    
+
     @objc func btnClick(button: UIButton) {
         var list: [HeroBrowserViewModule] = []
         for i in 0...4 {
-            guard let button = self.view.viewWithTag(i+1) as? UIButton, let img = button.imageView?.image else { continue }
+            guard let button = self.view.viewWithTag(i + 1) as? UIButton, let img = button.imageView?.image else { continue }
             list.append(HeroBrowserLocalImageViewModule(image: img))
         }
-        
+
         let brower = HeroBrowser(viewModules: list, index: button.tag - 1, heroImageView: button.imageView) { [weak self] imageIndex in
             guard let self = self else { return nil }
             guard let btn = self.view.viewWithTag(imageIndex + 1) as? UIButton else { return nil }
@@ -73,5 +72,5 @@ class LocalImageViewController: UIViewController {
         }
         brower.show(with: self, animationType: .hero)
     }
-    
+
 }

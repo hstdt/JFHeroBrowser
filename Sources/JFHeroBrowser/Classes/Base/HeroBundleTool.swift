@@ -8,7 +8,7 @@
 import UIKit
 
 class HeroBundleTool: NSObject {
-    
+
     static func getBundleImage(with imageName: String, imageType: String = "png") -> UIImage? {
 
         let suffix = "@2x"
@@ -32,5 +32,5 @@ class HeroBundleTool: NSObject {
         #endif
         return nil
     }
-    
+
 }

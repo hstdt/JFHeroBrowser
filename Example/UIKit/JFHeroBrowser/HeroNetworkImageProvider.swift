@@ -22,10 +22,8 @@ extension HeroNetworkImageProvider: NetworkImageProvider {
             switch result {
             case .success(let loadingImageResult):
                 complete?(.success((loadingImageResult.image, nil)))
-                break
             case .failure(let error):
                 complete?(.failed(error))
-                break
             }
         }
     }

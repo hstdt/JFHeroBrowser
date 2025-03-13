@@ -8,19 +8,19 @@
 import UIKit
 
 open class HeroBrowserDataImageViewModule: HeroBrowserViewModule {
-    
+
     open override var identity: String {
-        return HeroBrowserBaseImageCell.identify()
+        HeroBrowserBaseImageCell.identify()
     }
-    
+
     open override var cellClz: AnyClass? {
-        return HeroBrowserBaseImageCell.self
+        HeroBrowserBaseImageCell.self
     }
-    
+
     public override func createCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> HeroBrowserCollectionCellProtocol {
-        return collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserBaseImageCell.identify(), for: indexPath) as! HeroBrowserBaseImageCell
+        collectionView.dequeueReusableCell(withReuseIdentifier: HeroBrowserBaseImageCell.identify(), for: indexPath) as! HeroBrowserBaseImageCell
     }
-    
+
     public override func asyncLoadThumbailSource(with complete: HeroBrowserViewModule.Complete<UIImage>?) {
         DispatchQueue.global().async {
             guard let img = UIImage(data: self.imageData) else {
@@ -34,7 +34,7 @@ open class HeroBrowserDataImageViewModule: HeroBrowserViewModule {
             }
         }
     }
-    
+
     public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<RawData>?) {
         DispatchQueue.global().async {
             guard let img = UIImage(data: self.imageData) else {
@@ -48,7 +48,7 @@ open class HeroBrowserDataImageViewModule: HeroBrowserViewModule {
             }
         }
     }
-    
+
     var imageData: Data
     public init(data: Data) {
         self.imageData = data

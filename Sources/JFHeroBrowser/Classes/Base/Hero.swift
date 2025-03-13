@@ -55,13 +55,11 @@ struct HeroError: Error {
 public protocol HeroCompatible {}
 public extension HeroCompatible {
     static var hero: Hero<Self>.Type {
-        set {}
         get { Hero<Self>.self }
+        set {}
     }
     var hero: Hero<Self> {
-        set {}
         get { Hero(self) }
+        set {}
     }
 }
-
-

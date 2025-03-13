@@ -14,14 +14,14 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
     public var updatedContainerScaleBlock: UpdatedContainerScaleBlock?
     public var beginTouchPoint: CGPoint = .zero
     public var beginFrame: CGRect = .zero
-    
+
     var container: UIImageView = {
-        let v = UIImageView()
-        v.isUserInteractionEnabled = true
-        v.clipsToBounds = true
-        return v
+        let imageView = UIImageView()
+        imageView.isUserInteractionEnabled = true
+        imageView.clipsToBounds = true
+        return imageView
     }()
-    
+
     lazy var scrollView: UIScrollView = {
         let tempView = UIScrollView(frame: .zero)
         tempView.showsHorizontalScrollIndicator = false
@@ -39,19 +39,19 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         tempView.delegate = self
         return tempView
     }()
-    
+
     public var videoViewModule: HeroBrowserVideoViewModule? {
         didSet {
             self.beginLoadSource()
         }
     }
-    
+
     public var viewModule: HeroBrowserViewModule? {
         didSet {
             self.beginLoadSource()
         }
     }
-        
+
     func beginLoadSource() {
         guard let vm = viewModule else { return }
         vm.asyncLoadThumbailSource { result in
@@ -71,25 +71,25 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
             }
         }
     }
-    
+
     func updateView(image: UIImage) {
         self.container.image = image
         self.updateContainerFrame(with: image)
     }
-    
+
     func updateContainerFrame(with image: UIImage) {
         guard let screenWidth = self.window?.frame.size.width, let screenHeight = self.window?.frame.size.height else { return }
         self.scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight))
         if screenWidth < screenHeight {
             let height = image.size.height * screenWidth / image.size.width
-            self.container.frame = CGRect.init(x: 0, y: 0, width: screenWidth, height: height)
-            self.scrollView.contentSize = CGSize.init(width: self.container.frame.size.width, height: self.container.frame.size.height)
+            self.container.frame = CGRect(x: 0, y: 0, width: screenWidth, height: height)
+            self.scrollView.contentSize = CGSize(width: self.container.frame.size.width, height: self.container.frame.size.height)
         } else {
             let width = image.size.width * screenHeight / image.size.height
-            self.container.frame = CGRect.init(x: 0, y: 0, width: width, height: screenHeight)
-            self.scrollView.contentSize = CGSize.init(width: self.container.frame.size.width, height: self.container.frame.size.height)
+            self.container.frame = CGRect(x: 0, y: 0, width: width, height: screenHeight)
+            self.scrollView.contentSize = CGSize(width: self.container.frame.size.width, height: self.container.frame.size.height)
         }
-        
+
         if screenWidth < screenHeight {
             if self.container.frame.size.height < self.scrollView.frame.size.height {
                 var center = self.container.center
@@ -104,39 +104,39 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
             }
         }
     }
-    
+
     public static func identify() -> String {
-        return NSStringFromClass(Self.self)
+        NSStringFromClass(Self.self)
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.setupView()
         NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged(noti:)), name:UIDevice.orientationDidChangeNotification, object: UIDevice.current)
     }
-    
+
     func setupView() {
         self.addSubview(self.scrollView)
         self.scrollView.addSubview(self.container)
-        self.container.autoresizingMask = [.flexibleWidth,.flexibleHeight]
-        
-        let panGest: UIPanGestureRecognizer = UIPanGestureRecognizer.init(target: self, action: #selector(onPan(gest:)))
+        self.container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        let panGest: UIPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(onPan(gest:)))
         panGest.delegate = self
         self.scrollView.addGestureRecognizer(panGest)
     }
-    
+
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func beginDragHandle() {
-        
+
     }
-    
+
     func endDragHandle() {
-        
+
     }
-    
+
 }
 
 extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
@@ -149,12 +149,10 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
             if let browser = self.browser {
                 browser.willDismissHandle?(browser.currentIndex, self.viewModule!)
             }
-            break
         case .changed:
             self.container.frame = self.getRectForPan(pan: gest)
             self.updatedContainerScaleBlock?(self.getScaleForPan(pan: gest))
-            break
-        case .ended,.cancelled:
+        case .ended, .cancelled:
             self.container.frame = self.getRectForPan(pan: gest)
             let isDown: Bool = gest.velocity(in: self).y > 0 ? true : false
             if isDown == true {
@@ -167,7 +165,6 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
                 self.updatedContainerScaleBlock?(1.0)
                 self.endDragHandle()
             }
-            break
 
         default:
             break
@@ -185,7 +182,7 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
         let  height = self.beginFrame.size.height * scale
         let xRate = (self.beginTouchPoint.x - self.beginFrame.origin.x) / self.beginFrame.size.width
         let currentTouchDeltaX = xRate * width
-        let x = currentTouch.x - currentTouchDeltaX;
+        let x = currentTouch.x - currentTouchDeltaX
         let yRate = (self.beginTouchPoint.y - self.beginFrame.origin.y) / self.beginFrame.size.height
         let currentTouchDeltaY = yRate * height
         let y = currentTouch.y - currentTouchDeltaY
@@ -196,31 +193,31 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
     private func getScaleForPan(pan: UIPanGestureRecognizer) -> CGFloat {
         let translation = pan.translation(in: self.scrollView)
         let scale: CGFloat = min(1.0, max(0.3, 1 - translation.y / self.bounds.size.height))
-        return scale;
+        return scale
     }
 
-    private func zoomRectForScale(scale: CGFloat,center: CGPoint) -> CGRect {
+    private func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
         var zoomRect: CGRect = .zero
         zoomRect.size.height = self.frame.size.height / scale
-        zoomRect.size.width  = self.frame.size.width  / scale
-        zoomRect.origin.x = center.x - (zoomRect.size.width  / 2.0)
+        zoomRect.size.width  = self.frame.size.width / scale
+        zoomRect.origin.x = center.x - (zoomRect.size.width / 2.0)
         zoomRect.origin.y = center.y - (zoomRect.size.height / 2.0)
-        return zoomRect;
+        return zoomRect
     }
 }
 
 extension HeroBrowserBaseImageCell: HeroBrowserHostedCellProtocol {}
 
 extension HeroBrowserBaseImageCell: HeroBrowserCollectionCellProtocol {
-    
+
     public func getContainer() -> UIView {
-        return self.container
+        self.container
     }
-    
-    public func resetZoom()  {
+
+    public func resetZoom() {
         self.scrollView.setZoomScale(1.0, animated: true)
     }
-    
+
     public func doubleTap(location: CGPoint) {
         if self.scrollView.zoomScale <= 1.0 {
             let gesturePointInImageView = self.container.convert(location, to: self)
@@ -232,11 +229,11 @@ extension HeroBrowserBaseImageCell: HeroBrowserCollectionCellProtocol {
 }
 
 extension HeroBrowserBaseImageCell {
-    
+
     public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return self.container
+        self.container
     }
-    
+
     public func scrollViewDidZoom(_ scrollView: UIScrollView) {
         var frame = self.container.frame
         if self.container.frame.size.height < scrollView.frame.size.height {
@@ -252,14 +249,14 @@ extension HeroBrowserBaseImageCell {
 }
 
 extension HeroBrowserBaseImageCell:UIGestureRecognizerDelegate {
-    
+
     @objc func orientationChanged(noti: Notification) {
         DispatchQueue.main.async {
             guard let bounds = self.window?.bounds else { return }
             self.scrollView.frame = bounds
         }
     }
-    
+
     open override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if let pan = gestureRecognizer as? UIPanGestureRecognizer {
             if self.scrollView.contentOffset.y > 0 {
