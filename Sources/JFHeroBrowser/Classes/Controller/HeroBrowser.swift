@@ -8,19 +8,6 @@
 import UIKit
 import Combine
 
-@objc public protocol HeroBrowserDataSource: AnyObject {
-    @objc func viewForHeader() -> UIView?
-    @objc func viewForFooter() -> UIView?
-}
-
-public protocol HeroBrowserDelegate: AnyObject {
-    func heroBrowser(_ heroBrowser: HeroBrowser, didLongPressHandle viewModule: HeroBrowserViewModuleBaseProtocol)
-}
-
-extension HeroBrowserDelegate {
-    func heroBrowser(_ heroBrowser: HeroBrowser, didLongPressHandle viewModule: HeroBrowserViewModuleBaseProtocol) {}
-}
-
 @MainActor
 public class HeroBrowserObservation: ObservableObject {
 
@@ -77,8 +64,8 @@ open class HeroBrowser: UIViewController {
 
     var animationType: HeroTransitionAnimationType = .hero
 
-    public weak var dataSource: HeroBrowserDataSource?
-    public weak var delegate: HeroBrowserDelegate?
+    public weak var headerFooterDataSource: HeroBrowserHeaderFooterDataSource?
+    public weak var gestureDelegate: HeroBrowserGestureDelegate?
 
     public weak var headerView: UIView?
     public weak var footerView: UIView?
@@ -202,11 +189,11 @@ extension HeroBrowser {
         self.view.addSubview(self.blurView)
         self.view.addSubview(self.collectionView)
         self.view.backgroundColor = .clear
-        if let headerView = self.dataSource?.viewForHeader() {
+        if let headerView = self.headerFooterDataSource?.viewForHeader() {
             self.view.addSubview(headerView)
             self.headerView = headerView
         }
-        if let footerView = self.dataSource?.viewForFooter() {
+        if let footerView = self.headerFooterDataSource?.viewForFooter() {
             self.view.addSubview(footerView)
             self.footerView = footerView
         }
@@ -321,20 +308,20 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
 
     @objc func handleLongPressEvent(gesture: UIGestureRecognizer) {
         guard gesture.state == .began else { return }
-        guard let vm = _viewModules?[self.currentIndex] else { return }
-        if let del = self.delegate {
-            del.heroBrowser(self, didLongPressHandle: vm)
+        guard let vm = _viewModules?[currentIndex] else { return }
+        if let gestureDelegate {
+            gestureDelegate.heroBrowser(self, didLongPressHandle: vm)
             return
         }
         self.heroBrowserDidLongPressHandle?(self, vm)
     }
 
     @objc func handleSingleFingerEvent(gesture: UIGestureRecognizer) {
-        if let cell = self.collectionView.cellForItem(at: self.currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
+        if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
             cell.resetZoom()
         }
 
-        if let cell = self.collectionView.cellForItem(at: self.currentIndexPath()) as? HeroBrowserVideoCell {
+        if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserVideoCell {
             if cell.videoView.player?.rate == 0 || cell.videoView.currentTime < 2 { // currentTime为1还是会响应
                 return // 避免在开始播放的时候想暂停，误操作导致dismiss
             }
@@ -346,7 +333,7 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
 
     @objc func handleDoubleFingerEvent(gesture: UIGestureRecognizer) {
         let touchLocation: CGPoint = gesture.location(in: gesture.view)
-        if let cell = self.collectionView.cellForItem(at: self.currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
+        if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
             if cell.videoViewModule == nil { // 避免视频readyToPlay阶段的双击
                 cell.doubleTap(location: touchLocation)
             }
@@ -493,16 +480,12 @@ extension HeroBrowser: UIViewControllerTransitioningDelegate, UIViewControllerAn
 extension HeroBrowser {
 
     func updateSubviewsFrame() {
-        let currentPage = self.store.currentPage
+        let currentPage = store.currentPage
         self.collectionView.frame = bounds
         self.blurView.frame = bounds
         self.blurEffectView?.frame = bounds
-        self.pageControlContainer.jf.centerX = self.collectionView.jf.centerX
-        if #available(iOS 11.0, *) {
-            self.pageControlContainer.jf.bottom = bounds.height - (self.view.window?.safeAreaInsets.bottom ?? 0) - 15
-        } else {
-            self.pageControlContainer.jf.bottom = bounds.height - 15
-        }
+        self.pageControlContainer.jf.centerX = collectionView.jf.centerX
+        self.pageControlContainer.jf.bottom = bounds.height - (view.window?.safeAreaInsets.bottom ?? 0) - 15
         self.collectionView.reloadData()
         self.collectionView.scrollToItem(at: IndexPath(item: currentPage, section: 0), at: .centeredHorizontally, animated: false)
         self.updateFooterOrHeaderView()
