@@ -91,13 +91,14 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         self.updateContainerFrame(size: image.size)
     }
 
-    func updateContainerFrame(size: CGSize) {
-        guard let screenWidth = self.window?.frame.size.width, let screenHeight = self.window?.frame.size.height else { return }
-        self.scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight))
+    func updateContainerFrame1(size: CGSize) {
+        guard let screenWidth = window?.frame.size.width, let screenHeight = window?.frame.size.height else { return }
+        scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight)) // 必须设置,否则scrollView.contentSize有问题.
         if screenWidth < screenHeight {
             let height = size.height * screenWidth / size.width
-            self.container.frame = CGRect(x: 0, y: 0, width: screenWidth, height: height)
-            self.scrollView.contentSize = CGSize(width: self.container.frame.size.width, height: self.container.frame.size.height)
+            let containerSize = CGSize(width: screenWidth, height: height)
+            container.frame = CGRect(origin: .zero, size: containerSize)
+            scrollView.contentSize = containerSize
         } else {
             let width = size.width * screenHeight / size.height
             self.container.frame = CGRect(x: 0, y: 0, width: width, height: screenHeight)
@@ -105,10 +106,10 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         }
 
         if screenWidth < screenHeight {
-            if self.container.frame.size.height < self.scrollView.frame.size.height {
-                var center = self.container.center
-                center.y = self.scrollView.frame.size.height / 2
-                self.container.center = center
+            if container.frame.size.height < frame.size.height {
+                var center = container.center
+                center.y = frame.size.height / 2
+                container.center = center
             }
         } else {
             if self.container.frame.size.width < self.scrollView.frame.size.width {
@@ -116,6 +117,21 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
                 center.x = self.scrollView.frame.size.width / 2
                 self.container.center = center
             }
+        }
+    }
+
+    func updateContainerFrame(size: CGSize) {
+        guard let screenWidth = window?.frame.size.width, let screenHeight = window?.frame.size.height else { return }
+        scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight)) // 必须设置,否则scrollView.contentSize有问题.
+        let height = size.height * screenWidth / size.width
+        let containerSize = CGSize(width: screenWidth, height: height)
+        container.frame = CGRect(origin: .zero, size: containerSize)
+        scrollView.contentSize = containerSize
+
+        if container.frame.size.height < frame.size.height {
+            var center = container.center
+            center.y = frame.size.height / 2
+            container.center = center
         }
     }
 
@@ -130,9 +146,18 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
     }
 
     func setupView() {
-        self.addSubview(self.scrollView)
+        addSubview(scrollView)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+
         self.scrollView.addSubview(self.container)
-        self.container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        // self.container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        // self.container.frame = .init(origin: .zero, size: .init(width: 1216, height: 845))
         self.addGestureRecognizer(panGesture)
     }
 
