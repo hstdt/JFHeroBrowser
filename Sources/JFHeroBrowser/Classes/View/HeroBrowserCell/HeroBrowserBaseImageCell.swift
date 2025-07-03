@@ -33,6 +33,7 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         tempView.maximumZoomScale = 3.0
         tempView.minimumZoomScale = 1.0
         tempView.setZoomScale(1, animated: false)
+        tempView.isUserInteractionEnabled = false
         if #available(iOS 11.0, *) {
             tempView.contentInsetAdjustmentBehavior = .never
         }
@@ -81,6 +82,8 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
 
     func updateView(image: UIImage) {
         self.container.image = image
+        self.scrollView.addGestureRecognizer(panGesture)
+        self.scrollView.isUserInteractionEnabled = true
         self.updateContainerFrame(with: image)
     }
 
@@ -91,7 +94,6 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
     func updateContainerFrame(size: CGSize) {
         guard let screenWidth = self.window?.frame.size.width, let screenHeight = self.window?.frame.size.height else { return }
         self.scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight))
-        self.scrollView.addGestureRecognizer(panGesture)
         if screenWidth < screenHeight {
             let height = size.height * screenWidth / size.width
             self.container.frame = CGRect(x: 0, y: 0, width: screenWidth, height: height)
