@@ -433,6 +433,7 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
 
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let contentOffsetX: CGFloat = scrollView.contentOffset.x
+        guard bounds.width > 0 else { return }
         let currentIndex: Int = Int((contentOffsetX + 0.5 * bounds.width) / bounds.width)
         self.updateHeroView(index: currentIndex)
         self.updatepageControlContainer(index: currentIndex)
