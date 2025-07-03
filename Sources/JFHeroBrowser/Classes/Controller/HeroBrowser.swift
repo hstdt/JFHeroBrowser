@@ -454,7 +454,7 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
     }
 }
 
-extension HeroBrowser:UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning {
+extension HeroBrowser: UIViewControllerTransitioningDelegate, UIViewControllerAnimatedTransitioning {
     // 自定义 放大 缩小 转场
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
         0.3

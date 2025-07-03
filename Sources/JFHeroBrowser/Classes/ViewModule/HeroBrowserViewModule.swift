@@ -29,21 +29,6 @@ public protocol NetworkImageProvider: AnyObject {
     func downloadImage(with imgUrl: String, complete: Complete<(UIImage, Data?)>?)
 }
 
-public protocol HeroBrowserViewModuleBaseProtocol {
-    var type: HeroBrowserType { get set }
-    func createCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> HeroBrowserCollectionCellProtocol
-    var identity : String { get }
-    var cellClz : AnyClass? { get }
-}
-
-public protocol HeroBrowserViewModuleProtocol: HeroBrowserViewModuleBaseProtocol {
-    associatedtype ThumbailData
-    associatedtype RawData
-    typealias Complete<T> = (HeroBrowserResult<T>) -> Void
-    func asyncLoadThumbailSource(with complete: Complete<ThumbailData>?)
-    func asyncLoadRawSource(with complete: Complete<RawData>?)
-}
-
 open class HeroBrowserViewModule: HeroBrowserViewModuleProtocol {
     open var identity: String {
         ""

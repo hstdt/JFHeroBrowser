@@ -8,40 +8,6 @@
 import UIKit
 import AVKit
 
-public enum HeroVideoPlayerState {
-    case unkonw
-    case playing
-    case pause
-    case stop
-    case buffering
-    case failed
-}
-
-public protocol HeroVideoViewDelegate: NSObjectProtocol {
-    func videoViewReadyToPlay(playerItem: AVPlayerItem, view: HeroVideoView)
-    func videoViewPlayerPlayingProgress(currentTime: Double, totalTime: Double, view: HeroVideoView)
-    func videoViewPlayerStatusDidChange(state: HeroVideoPlayerState, view: HeroVideoView)
-    func videoViewPlayerDidPlayToEnd(noti: Notification, view: HeroVideoView)
-}
-
-public extension HeroVideoViewDelegate {
-    func videoViewReadyToPlay(playerItem: AVPlayerItem, view: HeroVideoView) {
-
-    }
-
-    func videoViewPlayerPlayingProgress(currentTime: Double, totalTime: Double, view: HeroVideoView) {
-
-    }
-
-    func videoViewPlayerStatusDidChange(state: HeroVideoPlayerState, view: HeroVideoView) {
-
-    }
-
-    func videoViewPlayerDidPlayToEnd(noti: Notification, view: HeroVideoView) {
-
-    }
-}
-
 public class HeroPlayerView: UIView {
     // MARK: - 重写的父类函数
     public override class var layerClass: AnyClass { AVPlayerLayer.self }
@@ -210,7 +176,6 @@ public class HeroVideoView: HeroPlayerView {
     public func seekToTime(dragSeconds: Float) {
         let seconds: Int = Int(Double(dragSeconds) * self.totalTime)
         self.player?.seek(to: CMTime(value: CMTimeValue(seconds), timescale: 1), toleranceBefore: CMTime(value: 1, timescale: 1), toleranceAfter: CMTime(value: 1, timescale: 1), completionHandler: { (finished) in
-
         })
     }
 

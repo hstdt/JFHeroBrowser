@@ -11,8 +11,3 @@ public protocol HeroBrowserHostedCellProtocol {
     var videoViewModule: HeroBrowserVideoViewModule? { get set }
     var viewModule: HeroBrowserViewModule? { get set }
 }
-
-public protocol HeroBrowserVideoCellProtocol : HeroBrowserHostedCellProtocol {
-    func pauseVideo()
-    func playVideo()
-}

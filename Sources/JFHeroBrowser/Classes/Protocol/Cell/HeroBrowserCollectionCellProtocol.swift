@@ -1,8 +1,8 @@
 //
-//  HeroBrowserView.swift
-//  Example
+//  HeroBrowserCollectionCellProtocol.swift
+//  JFHeroBrowser
 //
-//  Created by 逸风 on 2021/8/4.
+//  Created by tdt on 7/3/25.
 //
 
 import Foundation
