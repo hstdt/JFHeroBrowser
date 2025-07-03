@@ -6,64 +6,7 @@
 //
 
 import UIKit
-
-class PageControlContainer: UIView {
-
-    private var pageControl: UIPageControl?
-    private var pageLabel: UILabel?
-    typealias DidChangePageHandle = (UIPageControl) -> Void
-    var didChangePageHandle: DidChangePageHandle?
-
-    var currentPage: Int = 0 {
-        didSet {
-            DispatchQueue.main.async {
-                self.pageControl?.currentPage = self.currentPage
-                self.pageLabel?.text = "\(self.currentPage + 1)/\(self.numberOfPages)"
-            }
-        }
-    }
-
-    var numberOfPages: Int = 0
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        self.pageControl?.frame = self.bounds
-        self.pageLabel?.frame = self.bounds
-    }
-
-    func updateView(with type: JFHeroBrowserPageControlType, numberOfPages: Int) {
-        self.numberOfPages = numberOfPages
-        var type = type
-        var available = false
-        if #available(iOS 14.0, *) {
-            available = true
-        }
-        if !available && numberOfPages > 9 {
-            type = .number
-        }
-        if type == .pageControl {
-            let pageC = UIPageControl()
-            pageC.addTarget(self, action: #selector(changePage(pageControl:)), for: .valueChanged)
-            pageC.hidesForSinglePage = true
-            pageC.numberOfPages = numberOfPages
-            self.pageControl = pageC
-            self.addSubview(pageC)
-        } else if type == .number {
-            let label = UILabel()
-            label.textAlignment = .center
-            label.font = UIFont.systemFont(ofSize: 15)
-            label.textColor = .white
-            self.pageLabel = label
-            self.addSubview(label)
-        } else {
-            self.isHidden = true
-        }
-    }
-
-    @objc func changePage(pageControl: UIPageControl) {
-        self.didChangePageHandle?(pageControl)
-    }
-}
+import Combine
 
 @objc public protocol HeroBrowserDataSource: AnyObject {
     @objc func viewForHeader() -> UIView?
@@ -78,6 +21,24 @@ extension HeroBrowserDelegate {
     func heroBrowser(_ heroBrowser: HeroBrowser, didLongPressHandle viewModule: HeroBrowserViewModuleBaseProtocol) {}
 }
 
+@MainActor
+public class HeroBrowserObservation: ObservableObject {
+
+    @Published public fileprivate(set) var _viewModules: [HeroBrowserViewModuleBaseProtocol]
+    @Published public var currentPage: Int = 0
+
+    let initialIndex: Int
+    let config: JFHeroBrowserGlobalConfig
+    public init(viewModules: [HeroBrowserViewModuleBaseProtocol],
+                index: Int = 0,
+                config: JFHeroBrowserGlobalConfig = .default) {
+        self._viewModules = viewModules
+        self.initialIndex = index
+        self.currentPage = index
+        self.config = config
+    }
+}
+
 open class HeroBrowser: UIViewController {
 
     public typealias HeroBrowserDidLongPressHandle = (_ heroBrowser: HeroBrowser, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
@@ -88,11 +49,10 @@ open class HeroBrowser: UIViewController {
     public var willDismissHandle: HeroBrowserWillDismissHandle?
     public var didDismissHandle: HeroBrowserDidDismissHandle?
 
+    public let store: HeroBrowserObservation
+
     lazy var effect = { UIBlurEffect(style: .dark) }()
     var blurEffectView: UIVisualEffectView?
-
-    var config: JFHeroBrowserGlobalConfig = .default
-
     lazy var blurView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
@@ -111,15 +71,15 @@ open class HeroBrowser: UIViewController {
         view.isPagingEnabled = true
         view.panGestureRecognizer.delaysTouchesBegan = true // 避免视频播放按钮对手势的干扰
         view.showsHorizontalScrollIndicator = false
-        if #available(iOS 11.0, *) {
-            view.contentInsetAdjustmentBehavior = .never
-        }
+        view.contentInsetAdjustmentBehavior = .never
         return view
     }()
 
     var animationType: HeroTransitionAnimationType = .hero
+
     public weak var dataSource: HeroBrowserDataSource?
     public weak var delegate: HeroBrowserDelegate?
+
     public weak var headerView: UIView?
     public weak var footerView: UIView?
     private var _isHideOther: Bool = false
@@ -136,7 +96,15 @@ open class HeroBrowser: UIViewController {
         }
     }
     weak var transitionContext: UIViewControllerAnimatedTransitioning?
-    public private(set) var _viewModules: [HeroBrowserViewModuleBaseProtocol]?
+
+    var _viewModules: [HeroBrowserViewModuleBaseProtocol]? {
+        store._viewModules
+    }
+
+    var config: JFHeroBrowserGlobalConfig {
+        store.config
+    }
+
     var isShow = false
     var _scrolling: Bool = false
     var currentIndex: Int {
@@ -159,7 +127,7 @@ open class HeroBrowser: UIViewController {
     var heroContentMode: UIView.ContentMode = .scaleAspectFill
 
     private lazy var pageControlContainer: PageControlContainer = {
-        var view = PageControlContainer(frame: CGRect(x: 0, y: 0, width: 250, height: 20))
+        var view = PageControlContainer(store: store, frame: CGRect(x: 0, y: 0, width: 250, height: 20))
         view.didChangePageHandle = { [weak self] pageControl in
             self?.changePage(pageControl: pageControl)
         }
@@ -167,6 +135,45 @@ open class HeroBrowser: UIViewController {
         view.backgroundColor = .clear
         return view
     }()
+
+    deinit {
+        print("HeroBrowser deinit")
+    }
+
+    public convenience init(
+        viewModules: [HeroBrowserViewModuleBaseProtocol],
+        index: Int = 0,
+        heroImageView: UIImageView? = nil,
+        imagePageDidChangeHandle: ImagePageDidChangeHandle? = nil,
+        config: JFHeroBrowserGlobalConfig = .default
+    ) {
+        let store = HeroBrowserObservation(viewModules: viewModules, index: index, config: config)
+        self.init(store: store, heroImageView: heroImageView, imagePageDidChangeHandle: imagePageDidChangeHandle)
+        setup()
+    }
+
+    init(store: HeroBrowserObservation,
+         heroImageView: UIImageView? = nil,
+         imagePageDidChangeHandle: ImagePageDidChangeHandle? = nil) {
+        self.store = store
+        self.heroImageView = heroImageView
+        self.imagePageDidChangeHandle = imagePageDidChangeHandle
+        super.init(nibName: nil, bundle: nil)
+        setup()
+    }
+
+    required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+}
+
+// MARK: - Life Cycle
+extension HeroBrowser {
+
+    open override func viewDidLoad() {
+        super.viewDidLoad()
+    }
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -176,13 +183,19 @@ open class HeroBrowser: UIViewController {
             self.updateSubviewsFrame()
         }
     }
+}
 
-    deinit {
-        print("HeroBrowser deinit")
-    }
-
-    open override func viewDidLoad() {
-        super.viewDidLoad()
+// MARK: - Setup
+extension HeroBrowser {
+    func setup() {
+        self.transitionContext = self
+        self.setupView()
+        self.setupGestureRecognizer()
+        self.switchToPage(index: store.initialIndex)
+        self.updatepageControlContainer(index: store.initialIndex)
+        self.indexChangeHandle(index: store.initialIndex)
+        self.prefetchImages()
+        self.registerCells()
     }
 
     func setupView() {
@@ -199,27 +212,44 @@ open class HeroBrowser: UIViewController {
         }
 
         let pageCount = _viewModules?.count ?? 0
-        self.pageControlContainer.updateView(with: self.config.pageControlType, numberOfPages: pageCount)
-        if self.config.enableBlurEffect {
+        self.pageControlContainer.updateView()
+        if store.config.enableBlurEffect {
             enableBlurEffet()
         }
     }
 
-    public convenience init(viewModules: [HeroBrowserViewModuleBaseProtocol], index: Int, heroImageView: UIImageView? = nil, imagePageDidChangeHandle: ImagePageDidChangeHandle? = nil, config: JFHeroBrowserGlobalConfig = .default) {
-        self.init()
-        self.config = config
-        self.heroImageView = heroImageView
-        self.imagePageDidChangeHandle = imagePageDidChangeHandle
-        _viewModules = viewModules
-        self.transitionContext = self
-        self.setupView()
-        self.setupGestureRecognizer()
-        self.switchToPage(index: index)
-        self.updatepageControlContainer(index: index)
-        self.indexChangeHandle(index: index)
-        self.prefetchImages()
-        self.registerCells()
+    private func registerCells() {
+        _viewModules?.forEach { module in
+            self.collectionView.register(module.cellClz, forCellWithReuseIdentifier: module.identity)
+        }
     }
+
+    func enableBlurEffet() {
+        self.blurView.backgroundColor = .clear
+        let blurEffectView = UIVisualEffectView(effect: self.effect)
+        blurEffectView.frame = bounds
+        self.blurView.addSubview(blurEffectView)
+        self.blurEffectView = blurEffectView
+    }
+
+}
+
+// MARK: - Setup
+extension HeroBrowser {
+
+    func updatepageControlContainer(index: Int) {
+        guard index < self.pageControlContainer.numberOfPages else { return }
+        store.currentPage = index
+    }
+
+    func updateHeroView(index: Int) {
+        guard index < _viewModules?.count ?? 0 else { return }
+        self.heroImageView = self.imagePageDidChangeHandle?(index)
+    }
+}
+
+// MARK: - Action
+extension HeroBrowser {
 
     public func show(with vc: UIViewController, animationType: HeroTransitionAnimationType = .hero) {
         self.animationType = animationType
@@ -236,37 +266,6 @@ open class HeroBrowser: UIViewController {
             self.didDismissHandle?(self.currentIndex, self._viewModules![self.currentIndex])
             completion?()
         })
-    }
-
-    func switchToPage(index: Int) {
-        self.collectionView.setContentOffset(CGPoint(x: Int(bounds.width * CGFloat(index)), y: 0), animated: false)
-    }
-
-    //preset to override
-    open func indexChangeHandle(index: Int) {
-
-    }
-
-    func updatepageControlContainer(index: Int) {
-        guard index < self.pageControlContainer.numberOfPages else { return }
-        self.pageControlContainer.currentPage = index
-    }
-
-    func updateHeroView(index: Int) {
-        guard index < _viewModules?.count ?? 0 else { return }
-        self.heroImageView = self.imagePageDidChangeHandle?(index)
-    }
-
-    @objc func changePage(pageControl: UIPageControl) {
-        self.updateHeroView(index: pageControl.currentPage)
-        self.switchToPage(index: pageControl.currentPage)
-    }
-
-    //register collectionView cell
-    private func registerCells() {
-        _viewModules?.forEach { module in
-            self.collectionView.register(module.cellClz, forCellWithReuseIdentifier: module.identity)
-        }
     }
 
     // 预加载左右各一张
@@ -286,14 +285,19 @@ open class HeroBrowser: UIViewController {
         networkVM.asyncLoadThumbailSource(with: nil)
     }
 
-    func enableBlurEffet() {
-        self.blurView.backgroundColor = .clear
-        let blurEffectView = UIVisualEffectView(effect: self.effect)
-        blurEffectView.frame = bounds
-        self.blurView.addSubview(blurEffectView)
-        self.blurEffectView = blurEffectView
+    func switchToPage(index: Int) {
+        self.collectionView.setContentOffset(CGPoint(x: Int(bounds.width * CGFloat(index)), y: 0), animated: false)
     }
 
+    @objc func changePage(pageControl: UIPageControl) {
+        self.updateHeroView(index: pageControl.currentPage)
+        self.switchToPage(index: pageControl.currentPage)
+    }
+
+    //preset to override
+    open func indexChangeHandle(index: Int) {
+
+    }
 }
 
 extension HeroBrowser: UIGestureRecognizerDelegate {
@@ -489,7 +493,7 @@ extension HeroBrowser: UIViewControllerTransitioningDelegate, UIViewControllerAn
 extension HeroBrowser {
 
     func updateSubviewsFrame() {
-        let index = self.pageControlContainer.currentPage
+        let currentPage = self.store.currentPage
         self.collectionView.frame = bounds
         self.blurView.frame = bounds
         self.blurEffectView?.frame = bounds
@@ -500,7 +504,7 @@ extension HeroBrowser {
             self.pageControlContainer.jf.bottom = bounds.height - 15
         }
         self.collectionView.reloadData()
-        self.collectionView.scrollToItem(at: IndexPath(item: index, section: 0), at: .centeredHorizontally, animated: false)
+        self.collectionView.scrollToItem(at: IndexPath(item: currentPage, section: 0), at: .centeredHorizontally, animated: false)
         self.updateFooterOrHeaderView()
     }
 
