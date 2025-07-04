@@ -14,6 +14,7 @@ public class HeroBrowserObservation: ObservableObject {
     @Published public fileprivate(set) var _viewModules: [HeroBrowserViewModuleBaseProtocol]
     @Published public var currentPage: Int = 0
     @Published public var showHeaderFooterView: Bool = true
+    public weak var browser: HeroBrowser?
 
     let initialIndex: Int
     let config: JFHeroBrowserGlobalConfig
@@ -176,20 +177,21 @@ extension HeroBrowser {
 // MARK: - Setup
 extension HeroBrowser {
     func setup() {
-        self.transitionContext = self
-        self.setupView()
-        self.setupGestureRecognizer()
-        self.switchToPage(index: store.initialIndex)
-        self.updatepageControlContainer(index: store.initialIndex)
-        self.prefetchImages()
-        self.registerCells()
+        store.browser = self
+        transitionContext = self
+        setupView()
+        setupGestureRecognizer()
+        switchToPage(index: store.initialIndex)
+        updatepageControlContainer(index: store.initialIndex)
+        prefetchImages()
+        registerCells()
     }
 
     func setupView() {
         self.view.addSubview(self.blurView)
         self.view.addSubview(self.collectionView)
         self.view.backgroundColor = .clear
-        if let headerView = store.headerFooterDataSource?.viewForHeader() {
+        if let headerView = store.headerFooterDataSource?.viewForHeader(store: store) {
             self.view.addSubview(headerView)
             headerView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -199,7 +201,7 @@ extension HeroBrowser {
             ])
             self.headerView = headerView
         }
-        if let footerView = store.headerFooterDataSource?.viewForFooter() {
+        if let footerView = store.headerFooterDataSource?.viewForFooter(store: store) {
             self.view.addSubview(footerView)
             footerView.translatesAutoresizingMaskIntoConstraints = false
             // 添加 footerView 约束
@@ -224,7 +226,7 @@ extension HeroBrowser {
         }
     }
 
-    func enableBlurEffet() {
+    private func enableBlurEffet() {
         self.blurView.backgroundColor = .clear
         let blurEffectView = UIVisualEffectView(effect: effect)
         blurEffectView.frame = bounds

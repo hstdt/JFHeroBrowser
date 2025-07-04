@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 @MainActor
-@objc public protocol HeroBrowserHeaderFooterDataSource: AnyObject {
-    @objc func viewForHeader() -> UIView?
-    @objc func viewForFooter() -> UIView?
+public protocol HeroBrowserHeaderFooterDataSource: AnyObject {
+    func viewForHeader(store: HeroBrowserObservation) -> UIView?
+    func viewForFooter(store: HeroBrowserObservation) -> UIView?
 }
