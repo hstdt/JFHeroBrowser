@@ -18,11 +18,11 @@ public class HeroBrowserObservation: ObservableObject {
     let config: JFHeroBrowserGlobalConfig
     public init(viewModules: [HeroBrowserViewModuleBaseProtocol],
                 index: Int = 0,
-                config: JFHeroBrowserGlobalConfig = .default) {
+                config: JFHeroBrowserGlobalConfig? = nil) {
         self._viewModules = viewModules
         self.initialIndex = index
         self.currentPage = index
-        self.config = config
+        self.config = config ?? .default
     }
 }
 
@@ -132,7 +132,7 @@ open class HeroBrowser: UIViewController {
         index: Int = 0,
         heroImageView: UIImageView? = nil,
         imagePageDidChangeHandle: ImagePageDidChangeHandle? = nil,
-        config: JFHeroBrowserGlobalConfig = .default
+        config: JFHeroBrowserGlobalConfig? = nil
     ) {
         let store = HeroBrowserObservation(viewModules: viewModules, index: index, config: config)
         self.init(store: store, heroImageView: heroImageView, imagePageDidChangeHandle: imagePageDidChangeHandle)

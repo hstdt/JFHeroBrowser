@@ -134,7 +134,7 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
             container.center = center
         }
     }
-
+    nonisolated
     public static func identify() -> String {
         NSStringFromClass(Self.self)
     }

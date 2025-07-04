@@ -22,8 +22,9 @@ open class HeroBrowserDataImageViewModule: HeroBrowserViewModule {
     }
 
     public override func asyncLoadThumbailSource(with complete: HeroBrowserViewModule.Complete<UIImage>?) {
+        let imageData = imageData
         DispatchQueue.global().async {
-            guard let img = UIImage(data: self.imageData) else {
+            guard let img = UIImage(data: imageData) else {
                 DispatchQueue.main.async {
                     complete?(.failed(HeroError(errorMsg: "decode img data failed")))
                 }
@@ -36,15 +37,16 @@ open class HeroBrowserDataImageViewModule: HeroBrowserViewModule {
     }
 
     public override func asyncLoadRawSource(with complete: HeroBrowserViewModule.Complete<RawData>?) {
+        let imageData = imageData
         DispatchQueue.global().async {
-            guard let img = UIImage(data: self.imageData) else {
+            guard let img = UIImage(data: imageData) else {
                 DispatchQueue.main.async {
                     complete?(.failed(HeroError(errorMsg: "decode img data failed")))
                 }
                 return
             }
             DispatchQueue.main.async {
-                complete?(.success((img, self.imageData)))
+                complete?(.success((img, imageData)))
             }
         }
     }

@@ -9,26 +9,27 @@ import Foundation
 import UIKit
 import JRBaseKit
 
-public enum JFHeroBrowserPageControlType {
+public enum JFHeroBrowserPageControlType: Sendable {
     case none
     case pageControl
     case number
 }
 
-public struct JFHeroBrowserGlobalConfig {
+public struct JFHeroBrowserGlobalConfig: Sendable {
     public var pageControlType: JFHeroBrowserPageControlType
     public var enableBlurEffect: Bool
     public var networkImageProvider: NetworkImageProvider?
-    public init(_ enableBlurEffect: Bool,
-                networkImageProvider: NetworkImageProvider? = nil, pageControlType: JFHeroBrowserPageControlType = .none) {
+    public init(
+        _ enableBlurEffect: Bool,
+        networkImageProvider: NetworkImageProvider? = nil,
+        pageControlType: JFHeroBrowserPageControlType = .none
+    ) {
         self.enableBlurEffect = enableBlurEffect
         self.networkImageProvider = networkImageProvider
         self.pageControlType = pageControlType
     }
-    nonisolated(unsafe)
-    public static var `default` = JFHeroBrowserGlobalConfig(true, networkImageProvider: nil, pageControlType: .pageControl)
-    nonisolated(unsafe)
-    public static var multiSource = JFHeroBrowserGlobalConfig(false, networkImageProvider: nil, pageControlType: .none)
+    @MainActor public static var `default` = JFHeroBrowserGlobalConfig(true, networkImageProvider: nil, pageControlType: .pageControl)
+    @MainActor public static var multiSource = JFHeroBrowserGlobalConfig(false, networkImageProvider: nil, pageControlType: .none)
 }
 
 public enum JFHeroBrowserOption {
@@ -55,11 +56,9 @@ struct HeroError: Error {
 public protocol HeroCompatible {}
 public extension HeroCompatible {
     static var hero: Hero<Self>.Type {
-        get { Hero<Self>.self }
-        set {}
+        Hero<Self>.self
     }
     var hero: Hero<Self> {
-        get { Hero(self) }
-        set {}
+        Hero(self)
     }
 }

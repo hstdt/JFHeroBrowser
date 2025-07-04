@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 
+@MainActor
 public protocol HeroBrowserCollectionCellProtocol: UICollectionViewCell {
     typealias UpdatedContainerScaleBlock = (CGFloat) -> Void
     typealias CloseBlock = () -> Void

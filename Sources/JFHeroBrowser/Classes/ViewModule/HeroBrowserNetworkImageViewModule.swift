@@ -8,6 +8,7 @@
 import UIKit
 
 open class HeroBrowserNetworkImageViewModule: HeroBrowserViewModule {
+
     open override var identity: String {
         HeroBrowserNetworkImageCell.identify()
     }
@@ -57,11 +58,19 @@ open class HeroBrowserNetworkImageViewModule: HeroBrowserViewModule {
     public weak var imageProvider: NetworkImageProvider?
     var thumbailImgUrl: String?
     var originImgUrl: String
-
+#if swift(>=6)
     public init(thumbailImgUrl: String?, originImgUrl: String, provider: NetworkImageProvider? = JFHeroBrowserGlobalConfig.default.networkImageProvider) {
         self.thumbailImgUrl = thumbailImgUrl
         self.originImgUrl = originImgUrl
         self.imageProvider = provider
         super.init(type: .networkImage)
     }
+#else
+    public init(thumbailImgUrl: String?, originImgUrl: String, provider: NetworkImageProvider? = nil) {
+        self.thumbailImgUrl = thumbailImgUrl
+        self.originImgUrl = originImgUrl
+        self.imageProvider = provider ?? JFHeroBrowserGlobalConfig.default.networkImageProvider  // 5.10的问题, 默认值不能写在init中
+        super.init(type: .networkImage)
+    }
+#endif
 }

@@ -8,7 +8,7 @@
 import Foundation
 import AVFoundation
 
-public enum HeroVideoPlayerState {
+public enum HeroVideoPlayerState: Sendable {
     case unkonw
     case playing
     case pause
@@ -17,6 +17,7 @@ public enum HeroVideoPlayerState {
     case failed
 }
 
+@MainActor
 public protocol HeroVideoViewDelegate: NSObjectProtocol {
     func videoViewReadyToPlay(playerItem: AVPlayerItem, view: HeroVideoView)
     func videoViewPlayerPlayingProgress(currentTime: Double, totalTime: Double, view: HeroVideoView)

@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 
+@MainActor
 public protocol HeroBrowserViewModuleBaseProtocol {
     var type: HeroBrowserType { get set }
     func createCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> HeroBrowserCollectionCellProtocol

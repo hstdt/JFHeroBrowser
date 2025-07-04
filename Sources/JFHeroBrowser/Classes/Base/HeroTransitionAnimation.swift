@@ -7,10 +7,11 @@
 
 import UIKit
 
-public enum HeroTransitionAnimationType {
+public enum HeroTransitionAnimationType: Sendable {
     case hero
 }
 
+@MainActor
 public class HeroTransitionAnimation: NSObject {
 
     static func present(transitonContext: UIViewControllerContextTransitioning, animationType: HeroTransitionAnimationType, heroBrowser: HeroBrowser) {

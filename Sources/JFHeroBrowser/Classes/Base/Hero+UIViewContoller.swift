@@ -12,6 +12,7 @@ extension UIViewController: HeroCompatible {}
 public extension Hero where Base: UIViewController {
 
     ///browser single video if you want to browser multi video please see (func browserMultiSoures)
+    @MainActor
     func browserVideo(viewModule: HeroBrowserVideoViewModule, options: (() -> [JFHeroBrowserOption])? = nil) {
         var heroImageView: UIImageView?
         var imageDidChangeHandle: HeroBrowser.ImagePageDidChangeHandle?
@@ -50,6 +51,7 @@ public extension Hero where Base: UIViewController {
     }
 
     ///browser photos
+    @MainActor
     func browserPhoto(viewModules: [HeroBrowserViewModule], initIndex: Int, options: (() -> [JFHeroBrowserOption])? = nil) {
         var heroImageView: UIImageView?
         var imageDidChangeHandle: HeroBrowser.ImagePageDidChangeHandle?
@@ -91,6 +93,7 @@ public extension Hero where Base: UIViewController {
     }
 
     ///multi video + photo
+    @MainActor
     func browserMultiSoures(viewModules: [HeroBrowserViewModuleBaseProtocol], initIndex: Int, options: (() -> [JFHeroBrowserOption])? = nil) {
         var heroImageView: UIImageView?
         var imageDidChangeHandle: HeroBrowser.ImagePageDidChangeHandle?

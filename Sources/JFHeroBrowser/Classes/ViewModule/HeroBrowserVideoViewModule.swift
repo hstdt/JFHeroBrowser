@@ -62,6 +62,7 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
         self.type = type
     }
 
+#if swift(>=6)
     public init(thumbailImgUrl: String?, fileUrlPath: String, provider: NetworkImageProvider? = JFHeroBrowserGlobalConfig.default.networkImageProvider, autoPlay: Bool = true, autoLoop: Bool = false) {
         self.thumbailImgUrl = thumbailImgUrl
         self.videoURL = URL(fileURLWithPath: fileUrlPath)
@@ -70,7 +71,19 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
         self.isAutoLoop = autoLoop
         self.type = .localVideo
     }
+#else
+    public init(thumbailImgUrl: String?, fileUrlPath: String, provider: NetworkImageProvider? = nil, autoPlay: Bool = true, autoLoop: Bool = false) {
+        self.thumbailImgUrl = thumbailImgUrl
+        self.videoURL = URL(fileURLWithPath: fileUrlPath)
+        self.imageProvider = provider ?? JFHeroBrowserGlobalConfig.default.networkImageProvider // 5.10的问题, 默认值不能写在init中
+        self.isAutoPlay = autoPlay
+        self.isAutoLoop = autoLoop
+        self.type = .localVideo
+    }
+#endif
 
+
+#if swift(>=6)
     public init(thumbailImgUrl: String?, videoUrl: String, provider: NetworkImageProvider? = JFHeroBrowserGlobalConfig.default.networkImageProvider, autoPlay: Bool = true, autoLoop: Bool = false) {
         self.thumbailImgUrl = thumbailImgUrl
         self.videoURL = URL(string: videoUrl)
@@ -79,4 +92,14 @@ open class HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol {
         self.isAutoLoop = autoLoop
         self.type = .networkVideo
     }
+#else
+    public init(thumbailImgUrl: String?, videoUrl: String, provider: NetworkImageProvider? = nil, autoPlay: Bool = true, autoLoop: Bool = false) {
+        self.thumbailImgUrl = thumbailImgUrl
+        self.videoURL = URL(string: videoUrl)
+        self.imageProvider = provider ?? JFHeroBrowserGlobalConfig.default.networkImageProvider // 5.10的问题, 默认值不能写在init中
+        self.isAutoPlay = autoPlay
+        self.isAutoLoop = autoLoop
+        self.type = .networkVideo
+    }
+#endif
 }

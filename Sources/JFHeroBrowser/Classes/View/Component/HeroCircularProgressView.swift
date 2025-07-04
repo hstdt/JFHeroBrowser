@@ -53,7 +53,7 @@ class HeroCircularProgressView: UIView {
 }
 
 extension HeroCircularProgressView: HeroCompatible {}
-extension Hero where Base: HeroCircularProgressView {
+@MainActor extension Hero where Base: HeroCircularProgressView {
     static func progressView() -> HeroCircularProgressView {
         HeroCircularProgressView.commonImageProgressView()
     }

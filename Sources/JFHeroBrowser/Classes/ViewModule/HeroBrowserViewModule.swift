@@ -18,13 +18,13 @@ public enum HeroBrowserType {
     case assetImage // Album Asset Image Source
 }
 
-public enum HeroBrowserResult<T> {
+public enum HeroBrowserResult<T: Sendable>: Sendable {
     case success(_ data: T)
     case progress(_ progress: CGFloat)
     case failed(_ error: Error?)
 }
 
-public protocol NetworkImageProvider: AnyObject {
+public protocol NetworkImageProvider: AnyObject, Sendable {
     typealias Complete<T> = (HeroBrowserResult<T>) -> Void
     func downloadImage(with imgUrl: String, complete: Complete<(UIImage, Data?)>?)
 }
@@ -57,7 +57,7 @@ open class HeroBrowserViewModule: HeroBrowserViewModuleProtocol {
 
 extension HeroBrowserViewModule: HeroCompatible {}
 extension Hero where Base: HeroBrowserViewModule {
-    static func localImageVM(image: UIImage) -> HeroBrowserViewModule {
+    @MainActor static func localImageVM(image: UIImage) -> HeroBrowserViewModule {
         HeroBrowserLocalImageViewModule(image: image)
     }
 }

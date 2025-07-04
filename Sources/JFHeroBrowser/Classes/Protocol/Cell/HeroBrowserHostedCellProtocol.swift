@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 public protocol HeroBrowserHostedCellProtocol {
     var videoViewModule: HeroBrowserVideoViewModule? { get set }
     var viewModule: HeroBrowserViewModule? { get set }

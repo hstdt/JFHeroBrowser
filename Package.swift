@@ -1,5 +1,6 @@
-// swift-tools-version: 5.4
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift 6.x 的deinit有问题, 暂时留在5.10
 
 import PackageDescription
 

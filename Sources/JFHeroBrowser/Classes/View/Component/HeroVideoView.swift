@@ -125,19 +125,21 @@ public class HeroVideoView: HeroPlayerView {
     func monitoringPlayback(playerItem: AVPlayerItem?) {
         if playerItem != nil, let player = self.player {
             self.playbackTimeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 1), queue: nil) { [weak self] (time) in
-                guard let sself = self, let item = sself.playerItem else {
-                    return
-                }
-                guard item.duration.timescale != 0 else {
-                    return
-                }
-                guard item.currentTime().timescale != 0 else {
-                    return
-                }
-                sself.totalTime = Double(item.duration.value / Int64(item.duration.timescale))
-                sself.currentTime = Double(time.value / Int64(time.timescale))
-                if sself.deletgate != nil {
-                    sself.deletgate?.videoViewPlayerPlayingProgress(currentTime: sself.currentTime, totalTime: sself.totalTime, view: sself)
+                MainActor.assumeIsolated {
+                    guard let sself = self, let item = sself.playerItem else {
+                        return
+                    }
+                    guard item.duration.timescale != 0 else {
+                        return
+                    }
+                    guard item.currentTime().timescale != 0 else {
+                        return
+                    }
+                    sself.totalTime = Double(item.duration.value / Int64(item.duration.timescale))
+                    sself.currentTime = Double(time.value / Int64(time.timescale))
+                    if sself.deletgate != nil {
+                        sself.deletgate?.videoViewPlayerPlayingProgress(currentTime: sself.currentTime, totalTime: sself.totalTime, view: sself)
+                    }
                 }
             } as? NSObject
         }
@@ -209,64 +211,66 @@ public class HeroVideoView: HeroPlayerView {
 // MARK: 播放状态监听 observer
 public extension HeroVideoView {
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        guard let key = keyPath else { return }
-        guard let player = self.player else { return }
-        guard let playerItem = self.playerItem else { return }
+        MainActor.assumeIsolated {
+            guard let key = keyPath else { return }
+            guard let player = self.player else { return }
+            guard let playerItem = self.playerItem else { return }
 
-        switch key {
+            switch key {
 
-        case "status":
-            switch playerItem.status {
-            case .readyToPlay:
-                print("AVPlayerStatusReadyToPlay")
+            case "status":
+                switch playerItem.status {
+                case .readyToPlay:
+                    print("AVPlayerStatusReadyToPlay")
 
-                if frame.size == .zero {
-                    setNeedsLayout()
-                    layoutIfNeeded()
+                    if frame.size == .zero {
+                        setNeedsLayout()
+                        layoutIfNeeded()
+                    }
+
+                    // 跳到xx秒播放视频
+                    if let seekTime = self.seekTime {
+                        self.seekTime = nil
+                        player.seek(to: seekTime)
+                    }
+
+                    deletgate?.videoViewReadyToPlay(playerItem: playerItem, view: self)
+                case .failed, .unknown:
+                    self.pauseVideo()
+                    self.state = .failed
+                default:
+                    break
                 }
 
-                // 跳到xx秒播放视频
-                if let seekTime = self.seekTime {
-                    self.seekTime = nil
-                    player.seek(to: seekTime)
+            case "loadedTimeRanges": // TODO 缓冲
+                //            print("loadedTimeRanges")
+                break
+
+            case "playbackBufferEmpty":
+                // 当缓冲是空的时候
+                print("playbackBufferEmpty 缓冲中")
+                if playerItem.isPlaybackBufferEmpty {
+                    state = .buffering
                 }
 
-                deletgate?.videoViewReadyToPlay(playerItem: playerItem, view: self)
-            case .failed, .unknown:
-                self.pauseVideo()
-                self.state = .failed
+            case "playbackLikelyToKeepUp":
+                // 当缓冲好的时候
+                print("playbackLikelyToKeepUp")
+                if playerItem.isPlaybackBufferFull || playerItem.isPlaybackLikelyToKeepUp, state == .buffering {
+                    playVideo()
+                }
+
+            case "readyForDisplay":
+                guard playerLayer.isReadyForDisplay, self.alpha == 0 else { return }
+                if isFadeToDisplay {
+                    UIView.animate(withDuration: 0.22) { self.alpha = 1 }
+                } else {
+                    self.alpha = 1
+                }
+
             default:
                 break
             }
-
-        case "loadedTimeRanges": // TODO 缓冲
-//            print("loadedTimeRanges")
-            break
-
-        case "playbackBufferEmpty":
-            // 当缓冲是空的时候
-            print("playbackBufferEmpty 缓冲中")
-            if playerItem.isPlaybackBufferEmpty {
-                state = .buffering
-            }
-
-        case "playbackLikelyToKeepUp":
-            // 当缓冲好的时候
-            print("playbackLikelyToKeepUp")
-            if playerItem.isPlaybackBufferFull || playerItem.isPlaybackLikelyToKeepUp, state == .buffering {
-                playVideo()
-            }
-
-        case "readyForDisplay":
-            guard playerLayer.isReadyForDisplay, self.alpha == 0 else { return }
-            if isFadeToDisplay {
-                UIView.animate(withDuration: 0.22) { self.alpha = 1 }
-            } else {
-                self.alpha = 1
-            }
-
-        default:
-            break
         }
     }
 
