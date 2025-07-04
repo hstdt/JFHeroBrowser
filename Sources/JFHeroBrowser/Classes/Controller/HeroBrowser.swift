@@ -14,11 +14,13 @@ public class HeroBrowserObservation: ObservableObject {
     @Published public fileprivate(set) var _viewModules: [HeroBrowserViewModuleBaseProtocol]
     @Published public var currentPage: Int = 0
     @Published public var showHeaderFooterView: Bool = true
+
     public weak var browser: HeroBrowser?
 
     let initialIndex: Int
     let config: JFHeroBrowserGlobalConfig
     public let headerFooterDataSource: HeroBrowserHeaderFooterDataSource?
+
     public init(viewModules: [HeroBrowserViewModuleBaseProtocol],
                 index: Int = 0,
                 config: JFHeroBrowserGlobalConfig? = nil,
@@ -49,6 +51,8 @@ open class HeroBrowser: UIViewController {
     public weak var footerView: UIView?
 
     public let store: HeroBrowserObservation
+
+    private var cancellables = Set<AnyCancellable>()
 
     lazy var effect = { UIBlurEffect(style: .dark) }()
     var blurEffectView: UIVisualEffectView?
@@ -185,6 +189,14 @@ extension HeroBrowser {
         updatepageControlContainer(index: store.initialIndex)
         prefetchImages()
         registerCells()
+        store.$showHeaderFooterView.sink {[weak self] show in
+            guard let self else { return }
+            UIView.animate(withDuration: 0.25) {
+                self.headerView?.isHidden = !show
+                self.footerView?.isHidden = !show
+            }
+        }
+        .store(in: &cancellables)
     }
 
     func setupView() {
@@ -328,18 +340,23 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
     }
 
     @objc func handleSingleFingerEvent(gesture: UIGestureRecognizer) {
-        if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
-            cell.resetZoom()
-        }
 
-        if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserVideoCell {
-            if cell.videoView.player?.rate == 0 || cell.videoView.currentTime < 2 { // currentTime为1还是会响应
-                return // 避免在开始播放的时候想暂停，误操作导致dismiss
+        if let headerFooterDataSource = store.headerFooterDataSource {
+            store.showHeaderFooterView.toggle()
+        } else {
+            if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
+                cell.resetZoom()
             }
-            cell.videoView.resetPlayer()
-        }
 
-        self.hide(with: nil)
+            if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserVideoCell {
+                if cell.videoView.player?.rate == 0 || cell.videoView.currentTime < 2 { // currentTime为1还是会响应
+                    return // 避免在开始播放的时候想暂停，误操作导致dismiss
+                }
+                cell.videoView.resetPlayer()
+            }
+
+            self.hide(with: nil)
+        }
     }
 
     @objc func handleDoubleFingerEvent(gesture: UIGestureRecognizer) {
