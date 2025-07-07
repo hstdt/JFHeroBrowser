@@ -17,6 +17,8 @@ public enum HeroVideoPlayerState: Sendable {
     case failed
 }
 
+extension AVPlayerItem: @unchecked @retroactive Sendable {}
+
 @MainActor
 public protocol HeroVideoViewDelegate: NSObjectProtocol {
     func videoViewReadyToPlay(playerItem: AVPlayerItem, view: HeroVideoView)

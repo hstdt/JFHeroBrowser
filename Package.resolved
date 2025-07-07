@@ -1,0 +1,15 @@
+{
+  "originHash" : "607414aaa50588054036231d2bcb5a79a22a710fd3bd9b19925842e3d3323750",
+  "pins" : [
+    {
+      "identity" : "jrbasekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JerryFans/JRBaseKit",
+      "state" : {
+        "revision" : "ee62235f59eae67c70fdc0f039aed90d3d4a9b99",
+        "version" : "1.1.2"
+      }
+    }
+  ],
+  "version" : 3
+}
