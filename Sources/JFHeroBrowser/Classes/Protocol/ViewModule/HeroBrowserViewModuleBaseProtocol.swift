@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import AVFoundation
 
 @MainActor
 public protocol HeroBrowserViewModuleBaseProtocol {
@@ -23,3 +24,9 @@ public protocol HeroBrowserViewModuleProtocol: HeroBrowserViewModuleBaseProtocol
     func asyncLoadThumbailSource(with complete: Complete<ThumbailData>?)
     func asyncLoadRawSource(with complete: Complete<RawData>?)
 }
+
+/* 修复Xcode 16.4 + Swift 5打包问题
+ While deserializing SIL witness table for protocol conformance HeroBrowserVideoViewModule: HeroBrowserViewModuleProtocol
+ While cross-referencing conformance for 'AVPlayerItem' ... to 'Sendable'
+ */
+extension AVPlayerItem: @unchecked @retroactive Sendable {}
