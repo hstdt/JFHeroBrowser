@@ -17,7 +17,7 @@ class PageControlContainer: UIView {
 
     var numberOfPages: Int {
         guard let store else { return 0 }
-        return store._viewModules.count
+        return store.viewModules.count
     }
 
     private var cancellables = Set<AnyCancellable>()

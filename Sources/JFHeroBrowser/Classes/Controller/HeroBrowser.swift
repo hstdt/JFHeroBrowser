@@ -11,7 +11,7 @@ import Combine
 @MainActor
 public class HeroBrowserObservation: ObservableObject {
 
-    @Published public fileprivate(set) var _viewModules: [HeroBrowserViewModuleBaseProtocol]
+    @Published public var viewModules: [HeroBrowserViewModuleBaseProtocol]
     @Published public var currentPage: Int = 0
     @Published public var showHeaderFooterView: Bool = true
 
@@ -25,7 +25,7 @@ public class HeroBrowserObservation: ObservableObject {
                 index: Int = 0,
                 config: JFHeroBrowserGlobalConfig? = nil,
                 headerFooterDataSource: HeroBrowserHeaderFooterDataSource? = nil) {
-        self._viewModules = viewModules
+        self.viewModules = viewModules
         self.initialIndex = index
         self.currentPage = index
         self.config = config ?? .default
@@ -95,8 +95,8 @@ open class HeroBrowser: UIViewController {
     }
     weak var transitionContext: UIViewControllerAnimatedTransitioning?
 
-    var _viewModules: [HeroBrowserViewModuleBaseProtocol]? {
-        store._viewModules
+    var viewModules: [HeroBrowserViewModuleBaseProtocol]? {
+        store.viewModules
     }
 
     var config: JFHeroBrowserGlobalConfig {
@@ -109,7 +109,7 @@ open class HeroBrowser: UIViewController {
         let width = bounds.size.width
         guard width > 0 else { return 0 }
         let index = Int(self.collectionView.contentOffset.x / width)
-        let count = _viewModules?.count ?? 0
+        let count = viewModules?.count ?? 0
         return index < count ? index : count
     }
 
@@ -197,6 +197,14 @@ extension HeroBrowser {
             }
         }
         .store(in: &cancellables)
+
+        store.$viewModules.sink {[weak self] _ in
+            guard let self else { return }
+            registerCells()
+            self.collectionView.reloadData()
+            self.switchToPage(index: store.currentPage)
+        }
+        .store(in: &cancellables)
     }
 
     func setupView() {
@@ -225,7 +233,7 @@ extension HeroBrowser {
             self.footerView = footerView
         }
 
-        let pageCount = _viewModules?.count ?? 0
+        let pageCount = viewModules?.count ?? 0
         self.pageControlContainer.updateView()
         if store.config.enableBlurEffect {
             enableBlurEffet()
@@ -233,7 +241,7 @@ extension HeroBrowser {
     }
 
     private func registerCells() {
-        _viewModules?.forEach { module in
+        viewModules?.forEach { module in
             self.collectionView.register(module.cellClz, forCellWithReuseIdentifier: module.identity)
         }
     }
@@ -257,7 +265,7 @@ extension HeroBrowser {
     }
 
     func updateHeroView(index: Int) {
-        guard index < _viewModules?.count ?? 0 else { return }
+        guard index < viewModules?.count ?? 0 else { return }
         self.heroImageView = self.imagePageDidChangeHandle?(index)
     }
 }
@@ -277,14 +285,14 @@ extension HeroBrowser {
     public func hide(with completion: (() -> Void)?) {
         self.isShow = false
         self.dismiss(animated: true, completion: {
-            self.didDismissHandle?(self.currentIndex, self._viewModules![self.currentIndex])
+            self.didDismissHandle?(self.currentIndex, self.viewModules![self.currentIndex])
             completion?()
         })
     }
 
     // 预加载左右各一张
     func prefetchImages() {
-        guard let vms = _viewModules else { return }
+        guard let vms = viewModules else { return }
         if currentIndex > 0 {
             self.loadImage(index: currentIndex - 1)
         }
@@ -294,7 +302,7 @@ extension HeroBrowser {
     }
 
     func loadImage(index: Int) {
-        guard let vms = _viewModules, index < vms.count, let networkVM = vms[index] as? HeroBrowserNetworkImageViewModule else { return }
+        guard let vms = viewModules, index < vms.count, let networkVM = vms[index] as? HeroBrowserNetworkImageViewModule else { return }
         networkVM.asyncLoadRawSource(with: nil)
         networkVM.asyncLoadThumbailSource(with: nil)
     }
@@ -331,7 +339,7 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
 
     @objc func handleLongPressEvent(gesture: UIGestureRecognizer) {
         guard gesture.state == .began else { return }
-        guard let vm = _viewModules?[currentIndex] else { return }
+        guard let vm = viewModules?[currentIndex] else { return }
         if let gestureDelegate {
             gestureDelegate.heroBrowser(self, didLongPressHandle: vm)
             return
@@ -401,12 +409,12 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
     }
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        _viewModules?.count ?? 0
+        viewModules?.count ?? 0
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         print("cellForItemAt index \(indexPath.item)")
-        guard let vm = _viewModules?[indexPath.item] else { return UICollectionViewCell() }
+        guard let vm = viewModules?[indexPath.item] else { return UICollectionViewCell() }
         let cell = vm.createCell(collectionView, indexPath)
         cell.getContainer().contentMode = self.heroContentMode
         cell.closeBlock = { [weak self] in
@@ -424,7 +432,7 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
 
     public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         print("willDisplay cell index \(indexPath.item)")
-        guard let vm = _viewModules?[indexPath.item] else { return }
+        guard let vm = viewModules?[indexPath.item] else { return }
         guard var cell = cell as? HeroBrowserHostedCellProtocol else { return }
         if let vm = vm as? HeroBrowserViewModule {
             cell.viewModule = vm
