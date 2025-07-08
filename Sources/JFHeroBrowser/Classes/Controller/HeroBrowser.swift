@@ -11,8 +11,24 @@ import Combine
 @MainActor
 public class HeroBrowserObservation: ObservableObject {
 
+    public enum ScrollingDirection {
+        case left
+        case right
+    }
+
+    public var direction: ScrollingDirection = .right
+
     @Published public var viewModules: [HeroBrowserViewModuleBaseProtocol]
-    @Published public var currentPage: Int = 0
+    @Published public var currentPage: Int = 0 {
+        didSet {
+            guard oldValue != currentPage else { return }
+            if oldValue < currentPage {
+                direction = .right
+            } else {
+                direction = .left
+            }
+        }
+    }
     @Published public var showHeaderFooterView: Bool = true
 
     public weak var browser: HeroBrowser?
