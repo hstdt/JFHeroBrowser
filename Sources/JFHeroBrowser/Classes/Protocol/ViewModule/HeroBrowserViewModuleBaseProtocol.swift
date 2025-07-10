@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 
 @MainActor
-public protocol HeroBrowserViewModuleBaseProtocol {
+public protocol HeroBrowserViewModuleBaseProtocol: AnyObject {
     var type: HeroBrowserType { get set }
     func createCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> HeroBrowserCollectionCellProtocol
     var identity : String { get }

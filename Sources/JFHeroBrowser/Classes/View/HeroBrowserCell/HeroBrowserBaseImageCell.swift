@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 open class HeroBrowserBaseImageCell: UICollectionViewCell {
 
@@ -14,6 +15,7 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
     public var updatedContainerScaleBlock: UpdatedContainerScaleBlock?
     public var beginTouchPoint: CGPoint = .zero
     public var beginFrame: CGRect = .zero
+    let zoomScalePublisher = PassthroughSubject<CGFloat, Never>()
 
     var container: UIImageView = {
         let imageView = UIImageView()
@@ -91,35 +93,6 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         self.updateContainerFrame(size: image.size)
     }
 
-    func updateContainerFrame1(size: CGSize) {
-        guard let screenWidth = window?.frame.size.width, let screenHeight = window?.frame.size.height else { return }
-        scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight)) // 必须设置,否则scrollView.contentSize有问题.
-        if screenWidth < screenHeight {
-            let height = size.height * screenWidth / size.width
-            let containerSize = CGSize(width: screenWidth, height: height)
-            container.frame = CGRect(origin: .zero, size: containerSize)
-            scrollView.contentSize = containerSize
-        } else {
-            let width = size.width * screenHeight / size.height
-            self.container.frame = CGRect(x: 0, y: 0, width: width, height: screenHeight)
-            self.scrollView.contentSize = CGSize(width: self.container.frame.size.width, height: self.container.frame.size.height)
-        }
-
-        if screenWidth < screenHeight {
-            if container.frame.size.height < frame.size.height {
-                var center = container.center
-                center.y = frame.size.height / 2
-                container.center = center
-            }
-        } else {
-            if self.container.frame.size.width < self.scrollView.frame.size.width {
-                var center = self.container.center
-                center.x = self.scrollView.frame.size.width / 2
-                self.container.center = center
-            }
-        }
-    }
-
     func updateContainerFrame(size: CGSize) {
         guard let screenWidth = window?.frame.size.width, let screenHeight = window?.frame.size.height else { return }
         scrollView.frame = CGRect(origin: .zero, size: CGSize(width: screenWidth, height: screenHeight)) // 必须设置,否则scrollView.contentSize有问题.
@@ -139,6 +112,8 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
         NSStringFromClass(Self.self)
     }
 
+    private var cancellables = Set<AnyCancellable>()
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.setupView()
@@ -155,10 +130,24 @@ open class HeroBrowserBaseImageCell: UICollectionViewCell {
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
-        self.scrollView.addSubview(self.container)
-        // self.container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        // self.container.frame = .init(origin: .zero, size: .init(width: 1216, height: 845))
-        self.addGestureRecognizer(panGesture)
+        scrollView.addSubview(self.container)
+        addGestureRecognizer(panGesture)
+
+        zoomScalePublisher
+            .throttle(for: .milliseconds(100), scheduler: DispatchQueue.main, latest: true)
+            .sink { [weak self] scale in
+                guard let self else { return }
+                if let browser, let headerFooterDataSource = browser.store.headerFooterDataSource {
+                    let store = browser.store
+                    if scale == 1 {
+                        store.showHeaderFooterView.toggle()
+                    } else {
+                        store.showHeaderFooterView = false
+                    }
+                }
+            }
+        .store(in: &cancellables)
+
     }
 
     required public init?(coder: NSCoder) {
@@ -179,27 +168,27 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
     @objc private func onPan(gest: UIPanGestureRecognizer) {
         switch gest.state {
         case .began:
-            self.beginFrame = self.container.frame
-            self.beginTouchPoint = gest.location(in: self.scrollView)
-            self.beginDragHandle()
-            if let browser = self.browser {
-                browser.willDismissHandle?(browser.currentIndex, self.viewModule!)
+            beginFrame = container.frame
+            beginTouchPoint = gest.location(in: scrollView)
+            beginDragHandle()
+            if let browser {
+                browser.willDismissHandle?(browser.currentIndex, viewModule!)
             }
         case .changed:
-            self.container.frame = self.getRectForPan(pan: gest)
-            self.updatedContainerScaleBlock?(self.getScaleForPan(pan: gest))
+            container.frame = getRectForPan(pan: gest)
+            updatedContainerScaleBlock?(getScaleForPan(pan: gest))
         case .ended, .cancelled:
-            self.container.frame = self.getRectForPan(pan: gest)
-            let isDown: Bool = gest.velocity(in: self).y > 0 ? true : false
+            self.container.frame = getRectForPan(pan: gest)
+            let isDown: Bool = gest.velocity(in: self).y > 100 ? true : false
             if isDown == true {
-                self.resetZoom()
-                self.closeBlock?()
+                resetZoom()
+                closeBlock?()
             } else {
                 UIView.animate(withDuration: 0.2) {
                     self.container.frame = self.beginFrame
                 }
-                self.updatedContainerScaleBlock?(1.0)
-                self.endDragHandle()
+                updatedContainerScaleBlock?(1.0)
+                endDragHandle()
             }
 
         default:
@@ -209,17 +198,17 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
 
     private func getRectForPan(pan: UIPanGestureRecognizer) -> CGRect {
         var rect: CGRect = .zero
-        guard self.beginFrame != CGRect.zero else {
+        guard beginFrame != CGRect.zero else {
             return rect
         }
-        let currentTouch = pan.location(in: self.scrollView)
-        let scale = self.getScaleForPan(pan: pan)
-        let width = self.beginFrame.size.width * scale
-        let  height = self.beginFrame.size.height * scale
-        let xRate = (self.beginTouchPoint.x - self.beginFrame.origin.x) / self.beginFrame.size.width
+        let currentTouch = pan.location(in: scrollView)
+        let scale = getScaleForPan(pan: pan)
+        let width = beginFrame.size.width * scale
+        let  height = beginFrame.size.height * scale
+        let xRate = (beginTouchPoint.x - beginFrame.origin.x) / beginFrame.size.width
         let currentTouchDeltaX = xRate * width
         let x = currentTouch.x - currentTouchDeltaX
-        let yRate = (self.beginTouchPoint.y - self.beginFrame.origin.y) / self.beginFrame.size.height
+        let yRate = (beginTouchPoint.y - beginFrame.origin.y) / beginFrame.size.height
         let currentTouchDeltaY = yRate * height
         let y = currentTouch.y - currentTouchDeltaY
         rect = CGRect(x: x, y: y, width: width, height: height)
@@ -227,15 +216,15 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
     }
 
     private func getScaleForPan(pan: UIPanGestureRecognizer) -> CGFloat {
-        let translation = pan.translation(in: self.scrollView)
-        let scale: CGFloat = min(1.0, max(0.3, 1 - translation.y / self.bounds.size.height))
+        let translation = pan.translation(in: scrollView)
+        let scale: CGFloat = min(1.0, max(0.3, 1 - translation.y / bounds.size.height))
         return scale
     }
 
     private func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
         var zoomRect: CGRect = .zero
-        zoomRect.size.height = self.frame.size.height / scale
-        zoomRect.size.width  = self.frame.size.width / scale
+        zoomRect.size.height = frame.size.height / scale
+        zoomRect.size.width  = frame.size.width / scale
         zoomRect.origin.x = center.x - (zoomRect.size.width / 2.0)
         zoomRect.origin.y = center.y - (zoomRect.size.height / 2.0)
         return zoomRect
@@ -247,40 +236,48 @@ extension HeroBrowserBaseImageCell: HeroBrowserHostedCellProtocol {}
 extension HeroBrowserBaseImageCell: HeroBrowserCollectionCellProtocol {
 
     public func getContainer() -> UIView {
-        self.container
+        container
     }
 
     public func resetZoom() {
-        self.scrollView.setZoomScale(1.0, animated: true)
+        // setScrollViewZoomScale(1.0) // 会导致翻页的时候也触发zoomScalePublisher
+        scrollView.setZoomScale(1.0, animated: true)
     }
 
     public func doubleTap(location: CGPoint) {
         if self.scrollView.zoomScale <= 1.0 {
-            let gesturePointInImageView = self.container.convert(location, to: self)
-            self.scrollView.zoom(to: self.zoomRectForScale(scale: 2.0, center: gesturePointInImageView), animated: true)
+            let gesturePointInImageView = container.convert(location, to: self)
+            self.scrollView.zoom(to: zoomRectForScale(scale: 2.0, center: gesturePointInImageView), animated: true)
         } else {
-            self.scrollView.setZoomScale(1.0, animated: true)
+            setScrollViewZoomScale(1.0)
         }
     }
+
+    public func setScrollViewZoomScale(_ scale: CGFloat, animated: Bool = true) {
+        scrollView.setZoomScale(scale, animated: true)
+        zoomScalePublisher.send(scale)
+    }
+
 }
 
 extension HeroBrowserBaseImageCell {
 
     public func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        self.container
+        container
     }
 
     public func scrollViewDidZoom(_ scrollView: UIScrollView) {
-        var frame = self.container.frame
-        if self.container.frame.size.height < scrollView.frame.size.height {
-            frame.origin.y = (self.scrollView.frame.size.height - self.container.frame.size.height) / 2
+        var frame = container.frame
+        if container.frame.size.height < scrollView.frame.size.height {
+            frame.origin.y = (scrollView.frame.size.height - container.frame.size.height) / 2
         } else {
             frame.origin.y = 0
         }
-        self.container.frame = frame
+        container.frame = frame
         if bounds.width > bounds.height {
-            self.container.jf.centerX = scrollView.jf.centerX
+            container.jf.centerX = scrollView.jf.centerX
         }
+        zoomScalePublisher.send(scrollView.zoomScale)
     }
 }
 
@@ -295,7 +292,7 @@ extension HeroBrowserBaseImageCell:UIGestureRecognizerDelegate {
 
     open override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if let pan = gestureRecognizer as? UIPanGestureRecognizer {
-            if self.scrollView.contentOffset.y > 0 {
+            if scrollView.contentOffset.y > 0 {
                 return false
             }
             let velocity: CGPoint = pan.velocity(in: self)

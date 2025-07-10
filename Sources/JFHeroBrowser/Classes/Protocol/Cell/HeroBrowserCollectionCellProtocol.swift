@@ -14,7 +14,7 @@ public protocol HeroBrowserCollectionCellProtocol: UICollectionViewCell {
     typealias CloseBlock = () -> Void
     static func identify() -> String
 
-    var browser: HeroBrowser? { get }
+    var browser: HeroBrowser? { get set }
 
     var viewModule: HeroBrowserViewModule? { get set }
     var videoViewModule: HeroBrowserVideoViewModule? { get set }

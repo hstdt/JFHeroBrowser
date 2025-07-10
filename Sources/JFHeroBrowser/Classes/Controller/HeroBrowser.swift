@@ -214,13 +214,28 @@ extension HeroBrowser {
         }
         .store(in: &cancellables)
 
-        store.$viewModules.sink {[weak self] _ in
-            guard let self else { return }
-            registerCells()
-            self.collectionView.reloadData()
-            self.switchToPage(index: store.currentPage)
-        }
-        .store(in: &cancellables)
+        store.$viewModules
+            .dropFirst()
+            .sink {[weak self] viewModules in
+                guard let self else { return }
+                defer {
+                    store.showHeaderFooterView = true // 否则删除之后, 会隐藏headerfooter
+                }
+                registerCells()
+                let currentPage = store.currentPage
+                var currentItem: HeroBrowserViewModuleBaseProtocol?
+                if let tmp = viewModules[safe: currentPage] { // 支持交换顺序
+                    currentItem = tmp
+                }
+                self.collectionView.reloadData()
+                if let currentItem, let newIndex = viewModules.firstIndex(where: { $0 === currentItem }) {
+                    updateHeroView(index: newIndex)
+                    switchToPage(index: newIndex)
+                } else {
+                    switchToPage(index: store.currentPage)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func setupView() {
@@ -365,21 +380,21 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
 
     @objc func handleSingleFingerEvent(gesture: UIGestureRecognizer) {
 
-        if let headerFooterDataSource = store.headerFooterDataSource {
-            store.showHeaderFooterView.toggle()
+        if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
+            cell.resetZoom()
+        }
+
+        if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserVideoCell {
+            if cell.videoView.player?.rate == 0 || cell.videoView.currentTime < 2 { // currentTime为1还是会响应
+                return // 避免在开始播放的时候想暂停，误操作导致dismiss
+            }
+            cell.videoView.resetPlayer()
+        }
+
+        if store.headerFooterDataSource == nil {
+            hide(with: nil)
         } else {
-            if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserCollectionCellProtocol {
-                cell.resetZoom()
-            }
-
-            if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserVideoCell {
-                if cell.videoView.player?.rate == 0 || cell.videoView.currentTime < 2 { // currentTime为1还是会响应
-                    return // 避免在开始播放的时候想暂停，误操作导致dismiss
-                }
-                cell.videoView.resetPlayer()
-            }
-
-            self.hide(with: nil)
+            store.showHeaderFooterView.toggle()
         }
     }
 
@@ -433,6 +448,7 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
         guard let vm = viewModules?[indexPath.item] else { return UICollectionViewCell() }
         let cell = vm.createCell(collectionView, indexPath)
         cell.getContainer().contentMode = self.heroContentMode
+        cell.browser = self
         cell.closeBlock = { [weak self] in
             guard let self else { return }
             animationType = .hero
