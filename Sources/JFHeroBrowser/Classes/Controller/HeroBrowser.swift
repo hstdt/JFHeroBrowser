@@ -27,11 +27,13 @@ public class HeroBrowserObservation: ObservableObject {
             } else {
                 direction = .left
             }
+            isScrollingProgrammatically = true
         }
     }
     @Published public var showHeaderFooterView: Bool = true
 
     public weak var browser: HeroBrowser?
+    var isScrollingProgrammatically = false
 
     let initialIndex: Int
     let config: JFHeroBrowserGlobalConfig
@@ -222,18 +224,20 @@ extension HeroBrowser {
                     store.showHeaderFooterView = true // 否则删除之后, 会隐藏headerfooter
                 }
                 registerCells()
-                let currentPage = store.currentPage
-                var currentItem: HeroBrowserViewModuleBaseProtocol?
-                if let tmp = viewModules[safe: currentPage] { // 支持交换顺序
-                    currentItem = tmp
-                }
                 self.collectionView.reloadData()
-                if let currentItem, let newIndex = viewModules.firstIndex(where: { $0 === currentItem }) {
-                    updateHeroView(index: newIndex)
-                    switchToPage(index: newIndex)
-                } else {
-                    switchToPage(index: store.currentPage)
+                if store.currentPage >= viewModules.count {
+                    store.currentPage = max(0, viewModules.count - 1)
                 }
+            }
+            .store(in: &cancellables)
+
+        store.$currentPage
+            .dropFirst()
+            .throttle(for: .milliseconds(10), scheduler: DispatchQueue.main, latest: true)
+            .sink {[weak self] currentPage in
+                guard let self else { return }
+                guard currentPage != currentIndex else { return }
+                switchToPage(index: currentPage)
             }
             .store(in: &cancellables)
     }
@@ -292,7 +296,9 @@ extension HeroBrowser {
 
     func updatepageControlContainer(index: Int) {
         guard index < self.pageControlContainer.numberOfPages else { return }
-        store.currentPage = index
+        if !store.isScrollingProgrammatically {
+            store.currentPage = index
+        }
     }
 
     func updateHeroView(index: Int) {
@@ -339,7 +345,7 @@ extension HeroBrowser {
     }
 
     func switchToPage(index: Int) {
-        self.collectionView.setContentOffset(CGPoint(x: Int(bounds.width * CGFloat(index)), y: 0), animated: false)
+        collectionView.setContentOffset(CGPoint(x: Int(bounds.width * CGFloat(index)), y: 0), animated: false)
     }
 
     @objc func changePage(pageControl: UIPageControl) {
@@ -490,13 +496,14 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
         let contentOffsetX: CGFloat = scrollView.contentOffset.x
         guard bounds.width > 0 else { return }
         let currentIndex: Int = Int((contentOffsetX + 0.5 * bounds.width) / bounds.width)
-        self.updateHeroView(index: currentIndex)
-        self.updatepageControlContainer(index: currentIndex)
+        updateHeroView(index: currentIndex)
     }
 
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         _scrolling = false
-        self.prefetchImages()
+        prefetchImages()
+        store.isScrollingProgrammatically = false
+        updatepageControlContainer(index: currentIndex)
     }
 
     open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -525,9 +532,9 @@ extension HeroBrowser: UIViewControllerTransitioningDelegate, UIViewControllerAn
 
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         if self.isShow == true {
-            self.present(transitonContext: transitionContext)
+            present(transitonContext: transitionContext)
         } else {
-            self.dismiss(transitonContext: transitionContext)
+            dismiss(transitonContext: transitionContext)
         }
     }
 
