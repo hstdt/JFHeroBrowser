@@ -10,6 +10,6 @@ import UIKit
 
 @MainActor
 public protocol HeroBrowserHeaderFooterDataSource: AnyObject {
-    func viewForHeader(store: HeroBrowserObservation) -> UIView?
-    func viewForFooter(store: HeroBrowserObservation) -> UIView?
+    func viewForHeader(browser: HeroBrowserObservation) -> UIView?
+    func viewForFooter(browser: HeroBrowserObservation) -> UIView?
 }

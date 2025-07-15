@@ -49,6 +49,12 @@ public class HeroBrowserObservation: ObservableObject {
         self.config = config ?? .default
         self.headerFooterDataSource = headerFooterDataSource
     }
+
+    // 同时更新
+    public func update(viewModules: [HeroBrowserViewModuleBaseProtocol], currentPage: Int) {
+        self.viewModules = viewModules
+        self.currentPage = currentPage
+    }
 }
 
 open class HeroBrowser: UIViewController {
@@ -246,7 +252,7 @@ extension HeroBrowser {
         self.view.addSubview(self.blurView)
         self.view.addSubview(self.collectionView)
         self.view.backgroundColor = .clear
-        if let headerView = store.headerFooterDataSource?.viewForHeader(store: store) {
+        if let headerView = store.headerFooterDataSource?.viewForHeader(browser: store) {
             self.view.addSubview(headerView)
             headerView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -256,7 +262,7 @@ extension HeroBrowser {
             ])
             self.headerView = headerView
         }
-        if let footerView = store.headerFooterDataSource?.viewForFooter(store: store) {
+        if let footerView = store.headerFooterDataSource?.viewForFooter(browser: store) {
             self.view.addSubview(footerView)
             footerView.translatesAutoresizingMaskIntoConstraints = false
             // 添加 footerView 约束
