@@ -17,7 +17,7 @@ public class HeroBrowserObservation: ObservableObject {
     }
 
     public var direction: ScrollingDirection = .right
-
+    var _dragging: Bool = false // 手动滚动中
     @Published public var viewModules: [HeroBrowserViewModuleBaseProtocol]
     @Published public var currentPage: Int = 0 {
         didSet {
@@ -122,7 +122,6 @@ open class HeroBrowser: UIViewController {
     }
 
     var isShow = false
-    var _scrolling: Bool = false
     var currentIndex: Int {
         let width = bounds.size.width
         guard width > 0 else { return 0 }
@@ -236,6 +235,7 @@ extension HeroBrowser {
             .throttle(for: .milliseconds(10), scheduler: DispatchQueue.main, latest: true)
             .sink {[weak self] currentPage in
                 guard let self else { return }
+                guard !store._dragging else { return }
                 guard currentPage != currentIndex else { return }
                 switchToPage(index: currentPage)
             }
@@ -429,6 +429,12 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
     func currentIndexPath() -> IndexPath {
         IndexPath(item: currentIndex, section: 0)
     }
+
+    func currentIndexByOffsetX() -> Int? {
+        let contentOffsetX: CGFloat = collectionView.contentOffset.x
+        guard bounds.width > 0 else { return nil }
+        return Int((contentOffsetX + 0.5 * bounds.width) / bounds.width)
+    }
 }
 
 extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIScrollViewDelegate, UICollectionViewDelegateFlowLayout {
@@ -486,23 +492,26 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
         if let videoCell = cell as? HeroBrowserVideoCellProtocol {
             videoCell.pauseVideo()
         }
+        if let index = currentIndexByOffsetX() {
+            updatepageControlContainer(index: index) // 为了让store.currentPage尽可能快进行更新, 在这里更新一下
+        }
     }
 
     public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        _scrolling = true
+        store._dragging = true
+        store.isScrollingProgrammatically = false
     }
 
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let contentOffsetX: CGFloat = scrollView.contentOffset.x
-        guard bounds.width > 0 else { return }
-        let currentIndex: Int = Int((contentOffsetX + 0.5 * bounds.width) / bounds.width)
-        updateHeroView(index: currentIndex)
+        if let index = currentIndexByOffsetX() {
+            updateHeroView(index: index)
+        }
     }
 
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        _scrolling = false
-        prefetchImages()
+        store._dragging = false
         store.isScrollingProgrammatically = false
+        prefetchImages()
         updatepageControlContainer(index: currentIndex)
     }
 
