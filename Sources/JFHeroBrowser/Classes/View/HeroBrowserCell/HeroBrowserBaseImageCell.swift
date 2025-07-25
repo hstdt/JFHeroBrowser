@@ -172,7 +172,10 @@ extension HeroBrowserBaseImageCell: UIScrollViewDelegate {
             beginTouchPoint = gest.location(in: scrollView)
             beginDragHandle()
             if let browser {
-                browser.willDismissHandle?(browser.currentIndex, viewModule!)
+                guard let module: HeroBrowserViewModuleBaseProtocol = videoViewModule ?? viewModule else {
+                    return
+                }
+                browser.willDismissHandle?(browser.currentIndex, module)
             }
         case .changed:
             container.frame = getRectForPan(pan: gest)
