@@ -167,10 +167,11 @@ public class HeroVideoView: HeroPlayerView {
         }
         self.pauseBackgroundSound()
         self.player?.play()
-        print("play url : \(self.videoURL?.absoluteString ?? "url is null")")
+        print("[JFHeroBrowser]play url : \(self.videoURL?.absoluteString ?? "url is null")")
     }
 
     public func pauseVideo() {
+        print("[JFHeroBrowser]pauseVideo")
         self.player?.pause()
         self.state = .pause
     }
@@ -221,7 +222,7 @@ public extension HeroVideoView {
             case "status":
                 switch playerItem.status {
                 case .readyToPlay:
-                    print("AVPlayerStatusReadyToPlay")
+                    print("[JFHeroBrowser]AVPlayerStatusReadyToPlay")
 
                     if frame.size == .zero {
                         setNeedsLayout()
@@ -236,6 +237,7 @@ public extension HeroVideoView {
 
                     deletgate?.videoViewReadyToPlay(playerItem: playerItem, view: self)
                 case .failed, .unknown:
+                    print("[JFHeroBrowser]AVPlayerStatusFailed")
                     self.pauseVideo()
                     self.state = .failed
                 default:
@@ -243,24 +245,25 @@ public extension HeroVideoView {
                 }
 
             case "loadedTimeRanges": // TODO 缓冲
-                //            print("loadedTimeRanges")
+                print("[JFHeroBrowser]loadedTimeRanges")
                 break
 
             case "playbackBufferEmpty":
                 // 当缓冲是空的时候
-                print("playbackBufferEmpty 缓冲中")
+                print("[JFHeroBrowser]playbackBufferEmpty 缓冲中")
                 if playerItem.isPlaybackBufferEmpty {
                     state = .buffering
                 }
 
             case "playbackLikelyToKeepUp":
                 // 当缓冲好的时候
-                print("playbackLikelyToKeepUp")
+                print("[JFHeroBrowser]playbackLikelyToKeepUp")
                 if playerItem.isPlaybackBufferFull || playerItem.isPlaybackLikelyToKeepUp, state == .buffering {
                     playVideo()
                 }
 
             case "readyForDisplay":
+                print("[JFHeroBrowser]readyForDisplay")
                 guard playerLayer.isReadyForDisplay, self.alpha == 0 else { return }
                 if isFadeToDisplay {
                     UIView.animate(withDuration: 0.22) { self.alpha = 1 }

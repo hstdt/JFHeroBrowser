@@ -156,7 +156,7 @@ open class HeroBrowser: UIViewController {
     }()
 
     deinit {
-        print("HeroBrowser deinit")
+        print("[JFHeroBrowser]HeroBrowser deinit")
     }
 
     public convenience init(
@@ -397,10 +397,8 @@ extension HeroBrowser: UIGestureRecognizerDelegate {
         }
 
         if let cell = collectionView.cellForItem(at: currentIndexPath()) as? HeroBrowserVideoCell {
-            if cell.videoView.player?.rate == 0 || cell.videoView.currentTime < 2 { // currentTime为1还是会响应
-                return // 避免在开始播放的时候想暂停，误操作导致dismiss
-            }
-            cell.videoView.resetPlayer()
+            cell.playBtnClick(button: cell.playButton)
+            return
         }
 
         if store.headerFooterDataSource == nil {
@@ -462,7 +460,7 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        print("cellForItemAt index \(indexPath.item)")
+        print("[JFHeroBrowser]cellForItemAt index \(indexPath.item)")
         guard let vm = viewModules?[indexPath.item] else { return UICollectionViewCell() }
         let cell = vm.createCell(collectionView, indexPath)
         cell.getContainer().contentMode = self.heroContentMode
@@ -481,7 +479,7 @@ extension HeroBrowser: UICollectionViewDelegate, UICollectionViewDataSource, UIS
     }
 
     public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        print("willDisplay cell index \(indexPath.item)")
+        print("[JFHeroBrowser]willDisplay cell index \(indexPath.item)")
         guard let vm = viewModules?[indexPath.item] else { return }
         guard var cell = cell as? HeroBrowserHostedCellProtocol else { return }
         if let vm = vm as? HeroBrowserViewModule {

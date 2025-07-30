@@ -24,7 +24,7 @@ extension HeroBrowserVideoCell: HeroVideoViewDelegate {
     func videoViewReadyToPlay(playerItem: AVPlayerItem, view: HeroVideoView) {
         self.loadingImageV.isHidden = true
         // 图片还没加载或加载失败,使用视频的size来更新frame
-        if self.scrollView.frame == .zero, let size = view.player?.currentItem?.actualVideoSize() {
+        if let size = view.player?.currentItem?.actualVideoSize() {
             self.updateContainerFrame(size: size)
         }
     }
