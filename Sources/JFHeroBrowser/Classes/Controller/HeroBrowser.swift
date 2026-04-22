@@ -63,11 +63,13 @@ open class HeroBrowser: UIViewController {
     public typealias HeroBrowserWillDismissHandle = (_ currentIndex: Int, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
     public typealias HeroBrowserDidDismissHandle = (_ currentIndex: Int, _ viewModule: HeroBrowserViewModuleBaseProtocol) -> Void
     public typealias ImagePageDidChangeHandle = (_ imageIndex: Int) -> UIImageView?
+    public typealias EmbeddedDismissHandle = (_ heroBrowser: HeroBrowser, _ completion: @escaping () -> Void) -> Void
 
     public var heroBrowserDidLongPressHandle: HeroBrowserDidLongPressHandle?
     public var willDismissHandle: HeroBrowserWillDismissHandle?
     public var didDismissHandle: HeroBrowserDidDismissHandle?
     public var imagePageDidChangeHandle: ImagePageDidChangeHandle?
+    public var embeddedDismissHandle: EmbeddedDismissHandle?
 
     public weak var gestureDelegate: HeroBrowserGestureDelegate?
 
@@ -327,6 +329,22 @@ extension HeroBrowser {
 
     public func hide(with completion: (() -> Void)?) {
         self.isShow = false
+        if let embeddedDismissHandle {
+            if let currentViewModule = currentViewModule {
+                willDismissHandle?(currentIndex, currentViewModule)
+            }
+            embeddedDismissHandle(self) { [weak self] in
+                guard let self else {
+                    completion?()
+                    return
+                }
+                if let currentViewModule = self.currentViewModule {
+                    self.didDismissHandle?(self.currentIndex, currentViewModule)
+                }
+                completion?()
+            }
+            return
+        }
         self.dismiss(animated: true, completion: {
             self.didDismissHandle?(self.currentIndex, self.viewModules![self.currentIndex])
             completion?()
@@ -359,6 +377,13 @@ extension HeroBrowser {
         self.switchToPage(index: pageControl.currentPage)
     }
 
+}
+
+private extension HeroBrowser {
+    var currentViewModule: HeroBrowserViewModuleBaseProtocol? {
+        guard let viewModules, viewModules.indices.contains(currentIndex) else { return nil }
+        return viewModules[currentIndex]
+    }
 }
 
 extension HeroBrowser: UIGestureRecognizerDelegate {
